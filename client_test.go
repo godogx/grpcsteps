@@ -63,6 +63,12 @@ func TestClient_GetItem(t *testing.T) {
 			},
 		},
 		{
+			scenario: "ErrorDocString",
+			handler: func(ctx context.Context, request *grpctest.GetItemRequest) (*grpctest.Item, error) {
+				return nil, status.Errorf(codes.FailedPrecondition, `invalid "id"`)
+			},
+		},
+		{
 			scenario: "Success",
 			handler: func(ctx context.Context, request *grpctest.GetItemRequest) (*grpctest.Item, error) {
 				var locale string
@@ -119,6 +125,12 @@ func TestClient_ListItems(t *testing.T) {
 			scenario: "MethodUnimplemented",
 			handler: func(*grpctest.ListItemsRequest, grpctest.ItemService_ListItemsServer) error {
 				return status.Errorf(codes.Unimplemented, "ListItems is not implemented")
+			},
+		},
+		{
+			scenario: "ErrorDocString",
+			handler: func(*grpctest.ListItemsRequest, grpctest.ItemService_ListItemsServer) error {
+				return status.Errorf(codes.FailedPrecondition, `invalid "page_size"`)
 			},
 		},
 		{
@@ -183,6 +195,12 @@ func TestClient_CreateItems(t *testing.T) {
 			},
 		},
 		{
+			scenario: "ErrorDocString",
+			handler: func(itemsServer grpctest.ItemService_CreateItemsServer) error {
+				return status.Errorf(codes.FailedPrecondition, `invalid "name"`)
+			},
+		},
+		{
 			scenario: "Success",
 			handler: func(srv grpctest.ItemService_CreateItemsServer) error {
 				var numItems int64
@@ -242,6 +260,12 @@ func TestClient_TransformItems(t *testing.T) {
 			scenario: "MethodUnimplemented",
 			handler: func(itemsServer grpctest.ItemService_TransformItemsServer) error {
 				return status.Errorf(codes.Unimplemented, "TransformItems is not implemented")
+			},
+		},
+		{
+			scenario: "ErrorDocString",
+			handler: func(itemsServer grpctest.ItemService_TransformItemsServer) error {
+				return status.Errorf(codes.FailedPrecondition, `invalid "name"`)
 			},
 		},
 		{

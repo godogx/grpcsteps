@@ -7,6 +7,7 @@ import (
 	"github.com/nhatthm/grpcmock"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/test/bufconn"
 
 	"github.com/godogx/grpcsteps/internal/grpctest"
 )
@@ -53,6 +54,15 @@ func TestClient_iShouldHaveResponseWithCodeAndErrorMessage_InvalidCode(t *testin
 	t.Parallel()
 
 	err := NewClient().iShouldHaveResponseWithCodeAndErrorMessage(`not a code`, "")
+	expected := `invalid code: "\"NOT A CODE\""`
+
+	assert.EqualError(t, err, expected)
+}
+
+func TestClient_iShouldHaveResponseWithCodeAndErrorMessageFromDocString_InvalidCode(t *testing.T) {
+	t.Parallel()
+
+	err := NewClient().iShouldHaveResponseWithCodeAndErrorMessageFromDocString(`not a code`, &godog.DocString{})
 	expected := `invalid code: "\"NOT A CODE\""`
 
 	assert.EqualError(t, err, expected)
@@ -209,4 +219,26 @@ func TestNewResponse(t *testing.T) {
 			assert.Equal(t, tc.expected, actual)
 		})
 	}
+}
+
+func TestWithAddr(t *testing.T) {
+	t.Parallel()
+
+	addr := "127.0.0.1:9000"
+	c := NewClient(RegisterService(grpctest.RegisterItemServiceServer, WithAddr(addr)))
+
+	assert.Equal(t, addr, c.services["/grpctest.ItemService/GetItem"].Address)
+}
+
+func TestWithAddressProvider(t *testing.T) {
+	t.Parallel()
+
+	provider := bufconn.Listen(1024 * 1024)
+	addr := "bufconn"
+
+	defer provider.Close() // nolint: errcheck
+
+	c := NewClient(RegisterService(grpctest.RegisterItemServiceServer, WithAddressProvider(provider)))
+
+	assert.Equal(t, addr, c.services["/grpctest.ItemService/ListItems"].Address)
 }

@@ -158,6 +158,8 @@ func (c *Client) RegisterContext(ctx *godog.ScenarioContext) {
 	ctx.Step(`^I should have(?: a)? (?:GRPC|grpc) response with code "([^"]*)"$`, c.iShouldHaveResponseWithCode)
 	ctx.Step(`^I should have(?: a)? (?:GRPC|grpc) response with error (?:message )?"([^"]*)"$`, c.iShouldHaveResponseWithErrorMessage)
 	ctx.Step(`^I should have(?: a)? (?:GRPC|grpc) response with code "([^"]*)" and error (?:message )?"([^"]*)"$`, c.iShouldHaveResponseWithCodeAndErrorMessage)
+	ctx.Step(`^I should have(?: a)? (?:GRPC|grpc) response with error(?: message)?:$`, c.iShouldHaveResponseWithErrorMessageFromDocString)
+	ctx.Step(`^I should have(?: a)? (?:GRPC|grpc) response with code "([^"]*)" and error(?: message)?:$`, c.iShouldHaveResponseWithCodeAndErrorMessageFromDocString)
 }
 
 func (c *Client) iRequestWithPayload(method string, params *godog.DocString) error {
@@ -216,6 +218,18 @@ func (c *Client) iShouldHaveResponseWithCodeAndErrorMessage(codeValue, err strin
 	}
 
 	return c.expect.assertErrorMessage(err)
+}
+
+func (c *Client) iShouldHaveResponseWithErrorMessageFromDocString(err *godog.DocString) error {
+	return c.iShouldHaveResponseWithErrorMessage(err.Content)
+}
+
+func (c *Client) iShouldHaveResponseWithCodeAndErrorMessageFromDocString(codeValue string, err *godog.DocString) error {
+	if err := c.iShouldHaveResponseWithCode(codeValue); err != nil {
+		return err
+	}
+
+	return c.expect.assertErrorMessage(err.Content)
 }
 
 // NewClient initiates a new grpc server extension for testing.
