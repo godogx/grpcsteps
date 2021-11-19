@@ -35,6 +35,7 @@ linters:
     - scopelint
     - testpackage
     - wrapcheck
+    - varnamelen
 
 issues:
   exclude-use-default: false
