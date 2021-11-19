@@ -165,7 +165,11 @@ Feature: Get Item
   `^I should have(?: a)? (?:GRPC|grpc) response with payload:?$`
 - Check for error code and error message <br/>
   `^I should have(?: a)? (?:GRPC|grpc) response with error (?:message )?"([^"]*)"$` <br/>
-  `^I should have(?: a)? (?:GRPC|grpc) response with code "([^"]*)" and error (?:message )?"([^"]*)"$`
+  `^I should have(?: a)? (?:GRPC|grpc) response with code "([^"]*)" and error (?:message )?"([^"]*)"$`<br/>
+  <br/>
+  If your error message contains quotes `"`, better use these with a doc string<br/>
+  `^I should have(?: a)? (?:GRPC|grpc) response with error (?:message )?:$` <br/>
+  `^I should have(?: a)? (?:GRPC|grpc) response with code "([^"]*)" and error (?:message )?:$`<br/>
 
 For example:
 
@@ -192,5 +196,31 @@ Feature: Create Items
         {
             "num_items": 2
         }
+        """
+```
+
+or
+
+```gherkin
+Feature: Create Items
+
+    Scenario: Create items
+        When I request a GRPC method "/grpctest.ItemService/CreateItems" with payload:
+        """
+        [
+            {
+                "id": 42,
+                "name": "Item #42"
+            },
+            {
+                "id": 43,
+                "name": "Item #42"
+            }
+        ]
+        """
+
+        Then I should have a GRPC response with error:
+        """
+        invalid "id"
         """
 ```

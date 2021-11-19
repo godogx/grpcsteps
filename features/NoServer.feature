@@ -8,4 +8,9 @@ Feature:
         """
         And The GRPC request timeout is "1ms"
 
-        Then I should have a GRPC response with code "DEADLINE_EXCEEDED"
+#        Then I should have a GRPC response with code "DEADLINE_EXCEEDED"
+
+        Then I should have a GRPC response with error message:
+        """
+        context deadline exceeded
+        """
