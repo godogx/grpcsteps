@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/cucumber/godog"
-	"github.com/nhatthm/grpcmock"
+	"github.com/nhatthm/grpcmock/service"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/test/bufconn"
@@ -73,44 +73,44 @@ func TestToPayload(t *testing.T) {
 
 	testCases := []struct {
 		scenario       string
-		methodType     grpcmock.MethodType
+		methodType     service.Type
 		data           string
 		expectedResult interface{}
 		expectedError  string
 	}{
 		{
 			scenario:      "invalid data for unary",
-			methodType:    grpcmock.MethodTypeUnary,
+			methodType:    service.TypeUnary,
 			data:          "42",
 			expectedError: "json: cannot unmarshal number into Go value of type grpctest.Item",
 		},
 		{
 			scenario:      "invalid data for stream",
-			methodType:    grpcmock.MethodTypeClientStream,
+			methodType:    service.TypeClientStream,
 			data:          `{"id": 42}`,
 			expectedError: "json: cannot unmarshal object into Go value of type []*grpctest.Item",
 		},
 		{
 			scenario:       "unary payload",
-			methodType:     grpcmock.MethodTypeUnary,
+			methodType:     service.TypeUnary,
 			data:           `{"id": 42}`,
 			expectedResult: &grpctest.Item{Id: 42},
 		},
 		{
 			scenario:       "server stream payload",
-			methodType:     grpcmock.MethodTypeServerStream,
+			methodType:     service.TypeServerStream,
 			data:           `{"id": 42}`,
 			expectedResult: &grpctest.Item{Id: 42},
 		},
 		{
 			scenario:       "client stream payload",
-			methodType:     grpcmock.MethodTypeClientStream,
+			methodType:     service.TypeClientStream,
 			data:           `[{"id": 42}]`,
 			expectedResult: []*grpctest.Item{{Id: 42}},
 		},
 		{
 			scenario:       "bidirectional stream payload",
-			methodType:     grpcmock.MethodTypeBidirectionalStream,
+			methodType:     service.TypeBidirectionalStream,
 			data:           `[{"id": 42}]`,
 			expectedResult: []*grpctest.Item{{Id: 42}},
 		},
@@ -184,27 +184,27 @@ func TestNewResponse(t *testing.T) {
 
 	testCases := []struct {
 		scenario   string
-		methodtype grpcmock.MethodType
+		methodtype service.Type
 		expected   interface{}
 	}{
 		{
 			scenario:   "unary",
-			methodtype: grpcmock.MethodTypeUnary,
+			methodtype: service.TypeUnary,
 			expected:   &grpctest.Item{},
 		},
 		{
 			scenario:   "client stream",
-			methodtype: grpcmock.MethodTypeClientStream,
+			methodtype: service.TypeClientStream,
 			expected:   &grpctest.Item{},
 		},
 		{
 			scenario:   "server stream",
-			methodtype: grpcmock.MethodTypeServerStream,
+			methodtype: service.TypeServerStream,
 			expected:   &[]*grpctest.Item{},
 		},
 		{
 			scenario:   "bidirectional",
-			methodtype: grpcmock.MethodTypeBidirectionalStream,
+			methodtype: service.TypeBidirectionalStream,
 			expected:   &[]*grpctest.Item{},
 		},
 	}

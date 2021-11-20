@@ -14,6 +14,7 @@ import (
 	"github.com/nhatthm/grpcmock"
 	"github.com/nhatthm/grpcmock/invoker"
 	grpcReflect "github.com/nhatthm/grpcmock/reflect"
+	"github.com/nhatthm/grpcmock/service"
 	"github.com/stretchr/testify/assert"
 	"github.com/swaggest/assertjson"
 	"google.golang.org/grpc"
@@ -95,7 +96,7 @@ func (e *clientExpect) assertErrorMessage(expected string) error {
 
 // Service contains needed information to form a GRPC request.
 type Service struct {
-	grpcmock.ServiceMethod
+	service.Method
 
 	Address     string
 	DialOptions []grpc.DialOption
@@ -118,10 +119,10 @@ type ClientOption func(s *Client)
 func (c *Client) registerService(id string, svc interface{}, opts ...ServiceOption) {
 	for _, method := range grpcReflect.FindServiceMethods(svc) {
 		svc := &Service{
-			ServiceMethod: grpcmock.ServiceMethod{
+			Method: service.Method{
 				ServiceName: id,
 				MethodName:  method.Name,
-				MethodType:  grpcmock.ToMethodType(method.IsClientStream, method.IsServerStream),
+				MethodType:  service.ToType(method.IsClientStream, method.IsServerStream),
 				Input:       method.Input,
 				Output:      method.Output,
 			},
@@ -311,20 +312,20 @@ func newExpect(svc *Service, data string) (*clientExpect, error) {
 	}
 
 	switch svc.MethodType {
-	case grpcmock.MethodTypeBidirectionalStream:
+	case service.TypeBidirectionalStream:
 		opts = append(opts, invoker.WithBidirectionalStreamHandler(grpcmock.SendAndRecvAll(payload, response)))
 
-	case grpcmock.MethodTypeClientStream:
+	case service.TypeClientStream:
 		opts = append(opts, invoker.WithInputStreamHandler(grpcmock.SendAll(payload)),
 			invoker.WithOutput(response),
 		)
 
-	case grpcmock.MethodTypeServerStream:
+	case service.TypeServerStream:
 		opts = append(opts, invoker.WithInput(payload),
 			invoker.WithOutputStreamHandler(grpcmock.RecvAll(response)),
 		)
 
-	case grpcmock.MethodTypeUnary:
+	case service.TypeUnary:
 		fallthrough
 	default:
 		opts = append(opts, invoker.WithInput(payload),
@@ -334,7 +335,7 @@ func newExpect(svc *Service, data string) (*clientExpect, error) {
 
 	opts = append(opts, invoker.WithDialOptions(svc.DialOptions...))
 
-	i := invoker.New(svc.ServiceMethod, opts...)
+	i := invoker.New(svc.Method, opts...)
 
 	return &clientExpect{
 		invoker:     i,
@@ -343,11 +344,11 @@ func newExpect(svc *Service, data string) (*clientExpect, error) {
 	}, nil
 }
 
-func newResponse(methodType grpcmock.MethodType, out interface{}) interface{} {
+func newResponse(methodType service.Type, out interface{}) interface{} {
 	result := reflect.New(grpcReflect.UnwrapType(out))
 
-	if grpcmock.IsMethodServerStream(methodType) ||
-		grpcmock.IsMethodBidirectionalStream(methodType) {
+	if service.IsMethodServerStream(methodType) ||
+		service.IsMethodBidirectionalStream(methodType) {
 		value := reflect.MakeSlice(reflect.SliceOf(result.Type()), 0, 0)
 		result = reflect.New(value.Type())
 
@@ -357,9 +358,9 @@ func newResponse(methodType grpcmock.MethodType, out interface{}) interface{} {
 	return result.Interface()
 }
 
-func toPayload(methodType grpcmock.MethodType, in interface{}, data string) (interface{}, error) {
+func toPayload(methodType service.Type, in interface{}, data string) (interface{}, error) {
 	result := reflect.New(grpcReflect.UnwrapType(in))
-	isSlice := grpcmock.IsMethodClientStream(methodType) || grpcmock.IsMethodBidirectionalStream(methodType)
+	isSlice := service.IsMethodClientStream(methodType) || service.IsMethodBidirectionalStream(methodType)
 
 	if isSlice {
 		result = reflect.MakeSlice(reflect.SliceOf(result.Type()), 0, 0)
