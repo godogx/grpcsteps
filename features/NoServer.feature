@@ -1,16 +1,16 @@
 Feature:
     Scenario: Server is not online
-        When I request a GRPC method "/NoServer/GetItem" with payload:
+        When I request a gRPC method "/NoServer/GetItem" with payload:
         """
         {
             "id": 42
         }
         """
-        And The GRPC request timeout is "1ms"
+        And The gRPC request timeout is "1ms"
 
-#        Then I should have a GRPC response with code "DEADLINE_EXCEEDED"
+#        Then I should have a gRPC response with code "DEADLINE_EXCEEDED"
 
-        Then I should have a GRPC response with error message:
+        Then I should have a gRPC response with error message:
         """
         context deadline exceeded
         """

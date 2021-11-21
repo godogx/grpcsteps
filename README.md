@@ -133,14 +133,14 @@ The options are:
 ##### Prepare for a request
 
 Create a new request with this pattern <br/>
-`^I request(?: a)? (?:GRPC|grpc)(?: method)? "([^"]*)" with payload:?$`
+`^I request(?: a)? (?:gRPC|GRPC|grpc)(?: method)? "([^"]*)" with payload:?$`
 
 Optionally, you can:
 
 - Add a header to the request with <br/>
-  `^The (?:GRPC|grpc) request has(?: a)? header "([^"]*): ([^"]*)"$`
+  `^The (?:gRPC|GRPC|grpc) request has(?: a)? header "([^"]*): ([^"]*)"$`
 - Set a timeout for the request with <br/>
-  `^The (?:GRPC|grpc) request timeout is "([^"]*)"$`
+  `^The (?:gRPC|GRPC|grpc) request timeout is "([^"]*)"$`
 
 For example:
 
@@ -148,28 +148,28 @@ For example:
 Feature: Get Item
 
     Scenario: Get item with locale
-        When I request a GRPC method "/grpctest.ItemService/GetItem" with payload:
+        When I request a gRPC method "/grpctest.ItemService/GetItem" with payload:
         """
         {
             "id": 42
         }
         """
-        And The GRPC request has a header "Locale: en-US"
+        And The gRPC request has a header "Locale: en-US"
 ```
 
 ##### Execute the request and validate the result.
 
 - Check only the response code <br/>
-  `^I should have(?: a)? (?:GRPC|grpc) response with code "([^"]*)"$`
+  `^I should have(?: a)? (?:gRPC|GRPC|grpc) response with code "([^"]*)"$`
 - Check if the request is successful and the response payload matches an expectation <br/>
-  `^I should have(?: a)? (?:GRPC|grpc) response with payload:?$`
+  `^I should have(?: a)? (?:gRPC|GRPC|grpc) response with payload:?$`
 - Check for error code and error message <br/>
-  `^I should have(?: a)? (?:GRPC|grpc) response with error (?:message )?"([^"]*)"$` <br/>
-  `^I should have(?: a)? (?:GRPC|grpc) response with code "([^"]*)" and error (?:message )?"([^"]*)"$`<br/>
+  `^I should have(?: a)? (?:gRPC|GRPC|grpc) response with error (?:message )?"([^"]*)"$` <br/>
+  `^I should have(?: a)? (?:gRPC|GRPC|grpc) response with code "([^"]*)" and error (?:message )?"([^"]*)"$`<br/>
   <br/>
   If your error message contains quotes `"`, better use these with a doc string<br/>
-  `^I should have(?: a)? (?:GRPC|grpc) response with error (?:message )?:$` <br/>
-  `^I should have(?: a)? (?:GRPC|grpc) response with code "([^"]*)" and error (?:message )?:$`<br/>
+  `^I should have(?: a)? (?:gRPC|GRPC|grpc) response with error (?:message )?:$` <br/>
+  `^I should have(?: a)? (?:gRPC|GRPC|grpc) response with code "([^"]*)" and error (?:message )?:$`<br/>
 
 For example:
 
@@ -177,7 +177,7 @@ For example:
 Feature: Create Items
 
     Scenario: Create items
-        When I request a GRPC method "/grpctest.ItemService/CreateItems" with payload:
+        When I request a gRPC method "/grpctest.ItemService/CreateItems" with payload:
         """
         [
             {
@@ -191,7 +191,7 @@ Feature: Create Items
         ]
         """
 
-        Then I should have a GRPC response with payload:
+        Then I should have a gRPC response with payload:
         """
         {
             "num_items": 2
@@ -205,7 +205,7 @@ or
 Feature: Create Items
 
     Scenario: Create items
-        When I request a GRPC method "/grpctest.ItemService/CreateItems" with payload:
+        When I request a gRPC method "/grpctest.ItemService/CreateItems" with payload:
         """
         [
             {
@@ -219,7 +219,7 @@ Feature: Create Items
         ]
         """
 
-        Then I should have a GRPC response with error:
+        Then I should have a gRPC response with error:
         """
         invalid "id"
         """

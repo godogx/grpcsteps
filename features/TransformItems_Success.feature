@@ -1,7 +1,7 @@
 Feature: Transform Items (Success)
 
     Scenario: Transform items
-        When I request a GRPC method "/grpctest.ItemService/TransformItems" with payload:
+        When I request a gRPC method "/grpctest.ItemService/TransformItems" with payload:
         """
         [
             {
@@ -15,8 +15,8 @@ Feature: Transform Items (Success)
         ]
         """
 
-        Then I should have a GRPC response with code "OK"
-        And I should have a GRPC response with payload:
+        Then I should have a gRPC response with code "OK"
+        And I should have a gRPC response with payload:
         """
         [
             {

@@ -1,10 +1,10 @@
 Feature: List Items
 
     Scenario: Internal Server Error
-        When I request a GRPC method "/grpctest.ItemService/ListItems" with payload:
+        When I request a gRPC method "/grpctest.ItemService/ListItems" with payload:
         """
         {}
         """
 
-        Then I should have a GRPC response with code "INTERNAL"
-        Then I should have a GRPC response with error message "Internal Server Error"
+        Then I should have a gRPC response with code "INTERNAL"
+        Then I should have a gRPC response with error message "Internal Server Error"

@@ -151,16 +151,16 @@ func (c *Client) RegisterContext(ctx *godog.ScenarioContext) {
 		return nil, nil
 	})
 
-	ctx.Step(`^I request(?: a)? (?:GRPC|grpc)(?: method)? "([^"]*)" with payload:?$`, c.iRequestWithPayload)
-	ctx.Step(`^The (?:GRPC|grpc) request has(?: a)? header "([^"]*): ([^"]*)"$`, c.iRequestWithHeader)
-	ctx.Step(`^The (?:GRPC|grpc) request timeout is "([^"]*)"$`, c.iRequestWithTimeout)
+	ctx.Step(`^I request(?: a)? (?:gRPC|GRPC|grpc)(?: method)? "([^"]*)" with payload:?$`, c.iRequestWithPayload)
+	ctx.Step(`^The (?:gRPC|GRPC|grpc) request has(?: a)? header "([^"]*): ([^"]*)"$`, c.iRequestWithHeader)
+	ctx.Step(`^The (?:gRPC|GRPC|grpc) request timeout is "([^"]*)"$`, c.iRequestWithTimeout)
 
-	ctx.Step(`^I should have(?: a)? (?:GRPC|grpc) response with payload:?$`, c.iShouldHaveResponseWithResponse)
-	ctx.Step(`^I should have(?: a)? (?:GRPC|grpc) response with code "([^"]*)"$`, c.iShouldHaveResponseWithCode)
-	ctx.Step(`^I should have(?: a)? (?:GRPC|grpc) response with error (?:message )?"([^"]*)"$`, c.iShouldHaveResponseWithErrorMessage)
-	ctx.Step(`^I should have(?: a)? (?:GRPC|grpc) response with code "([^"]*)" and error (?:message )?"([^"]*)"$`, c.iShouldHaveResponseWithCodeAndErrorMessage)
-	ctx.Step(`^I should have(?: a)? (?:GRPC|grpc) response with error(?: message)?:$`, c.iShouldHaveResponseWithErrorMessageFromDocString)
-	ctx.Step(`^I should have(?: a)? (?:GRPC|grpc) response with code "([^"]*)" and error(?: message)?:$`, c.iShouldHaveResponseWithCodeAndErrorMessageFromDocString)
+	ctx.Step(`^I should have(?: a)? (?:gRPC|GRPC|grpc) response with payload:?$`, c.iShouldHaveResponseWithResponse)
+	ctx.Step(`^I should have(?: a)? (?:gRPC|GRPC|grpc) response with code "([^"]*)"$`, c.iShouldHaveResponseWithCode)
+	ctx.Step(`^I should have(?: a)? (?:gRPC|GRPC|grpc) response with error (?:message )?"([^"]*)"$`, c.iShouldHaveResponseWithErrorMessage)
+	ctx.Step(`^I should have(?: a)? (?:gRPC|GRPC|grpc) response with code "([^"]*)" and error (?:message )?"([^"]*)"$`, c.iShouldHaveResponseWithCodeAndErrorMessage)
+	ctx.Step(`^I should have(?: a)? (?:gRPC|GRPC|grpc) response with error(?: message)?:$`, c.iShouldHaveResponseWithErrorMessageFromDocString)
+	ctx.Step(`^I should have(?: a)? (?:gRPC|GRPC|grpc) response with code "([^"]*)" and error(?: message)?:$`, c.iShouldHaveResponseWithCodeAndErrorMessageFromDocString)
 }
 
 func (c *Client) iRequestWithPayload(method string, params *godog.DocString) error {
