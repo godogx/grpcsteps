@@ -9,11 +9,22 @@
 `grpcsteps` uses [`nhatthm/grpcmock`](https://github.com/nhatthm/grpcmock) to provide steps for [`cucumber/godog`](https://github.com/cucumber/godog) and makes
 it easy to run tests with grpc server and client.
 
-Read more about [`nhatthm/grpcmock`](https://github.com/nhatthm/grpcmock)
+## Table of Contents
+
+- [Prerequisites](#prerequisites)
+- [Usage](#usage)
+    - [Test a gPRC Server](#test-a-gprc-server)
+        - [Setup](#setup)
+        - [Options](#options)
+        - [Steps](#steps)
+            - [Prepare for a request](#prepare-for-a-request)
+            - [Execute the request and validate the result](#execute-the-request-and-validate-the-result)
 
 ## Prerequisites
 
 - `Go >= 1.17`
+
+[<sub><sup>[table of contents]</sup></sub>](#table-of-contents)
 
 ## Usage
 
@@ -69,6 +80,8 @@ func TestIntegration(t *testing.T) {
 }
 ```
 
+[<sub><sup>[table of contents]</sup></sub>](#table-of-contents)
+
 #### Setup
 
 In order to test the gPRC server, you have to register it to the client with `grpcsteps.RegisterService()` while initializing. The first argument is the
@@ -76,6 +89,8 @@ function that prototool generates for you. something like this
 
 ```go
 package mypackage
+
+import "google.golang.org/grpc"
 
 func RegisterItemServiceServer(s grpc.ServiceRegistrar, srv ItemServiceServer) {
 	s.RegisterService(&ItemService_ServiceDesc, srv)
@@ -86,6 +101,8 @@ You can configure how the client connects to the server by putting the options. 
 
 ```go
 package mypackage
+
+import "google.golang.org/grpc"
 
 func createClient() *grpcsteps.Client {
 	return grpcsteps.NewClient(
@@ -104,19 +121,23 @@ If you have multiple services and want to apply a same set of options to all, us
 ```go
 package mypackage
 
+import "google.golang.org/grpc"
+
 func createClient() *grpcsteps.Client {
 	return grpcsteps.NewClient(
 		// Set default service options.
 		grpcsteps.WithDefaultServiceOptions(
 			grpcsteps.WithDialOptions(
-                grpc.WithInsecure(),
-            ),
+				grpc.WithInsecure(),
+			),
 		),
 		// Register other services after this.
 		grpcsteps.RegisterService(grpctest.RegisterItemServiceServer),
 	)
 }
 ```
+
+[<sub><sup>[table of contents]</sup></sub>](#table-of-contents)
 
 #### Options
 
@@ -127,6 +148,8 @@ The options are:
 - `grpcsteps.WithAddr(string)`: Connect to the server using the given address. For example: `:9090` or `localhost:9090`.
 - `grpcsteps.WithDialOption(grpc.DialOption)`: Add a dial option for connecting to the server.
 - `grpcsteps.WithDialOptions(...grpc.DialOption)`: Add multiple dial options for connecting to the server.
+
+[<sub><sup>[table of contents]</sup></sub>](#table-of-contents)
 
 #### Steps
 
@@ -156,6 +179,8 @@ Feature: Get Item
         """
         And The gRPC request has a header "Locale: en-US"
 ```
+
+[<sub><sup>[table of contents]</sup></sub>](#table-of-contents)
 
 ##### Execute the request and validate the result.
 
@@ -224,3 +249,5 @@ Feature: Create Items
         invalid "id"
         """
 ```
+
+[<sub><sup>[table of contents]</sup></sub>](#table-of-contents)
