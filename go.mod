@@ -5,7 +5,7 @@ go 1.17
 require (
 	github.com/cucumber/godog v0.12.2
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
-	github.com/nhatthm/grpcmock v0.9.0
+	github.com/nhatthm/grpcmock v0.10.0
 	github.com/stretchr/testify v1.7.0
 	github.com/swaggest/assertjson v1.6.8
 	google.golang.org/grpc v1.42.0
