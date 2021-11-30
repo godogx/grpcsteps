@@ -28,7 +28,7 @@ func TestClient_NoServer(t *testing.T) {
 		),
 	)
 
-	runSuite(t, c, "features/NoServer.feature")
+	runSuite(t, c, "features/client/NoServer.feature")
 }
 
 func TestClient_GetItem(t *testing.T) {
@@ -95,7 +95,7 @@ func TestClient_GetItem(t *testing.T) {
 			t.Parallel()
 
 			runItemServiceTest(t,
-				fmt.Sprintf("features/GetItem_%s.feature", tc.scenario),
+				fmt.Sprintf("features/client/GetItem_%s.feature", tc.scenario),
 				testSrv.GetItem(tc.handler),
 			)
 		})
@@ -162,7 +162,7 @@ func TestClient_ListItems(t *testing.T) {
 			t.Parallel()
 
 			runItemServiceTest(t,
-				fmt.Sprintf("features/ListItems_%s.feature", tc.scenario),
+				fmt.Sprintf("features/client/ListItems_%s.feature", tc.scenario),
 				testSrv.ListItems(tc.handler),
 			)
 		})
@@ -230,7 +230,7 @@ func TestClient_CreateItems(t *testing.T) {
 			t.Parallel()
 
 			runItemServiceTest(t,
-				fmt.Sprintf("features/CreateItems_%s.feature", tc.scenario),
+				fmt.Sprintf("features/client/CreateItems_%s.feature", tc.scenario),
 				testSrv.CreateItems(tc.handler),
 			)
 		})
@@ -300,7 +300,7 @@ func TestClient_TransformItems(t *testing.T) {
 			t.Parallel()
 
 			runItemServiceTest(t,
-				fmt.Sprintf("features/TransformItems_%s.feature", tc.scenario),
+				fmt.Sprintf("features/client/TransformItems_%s.feature", tc.scenario),
 				testSrv.TransformItems(tc.handler),
 			)
 		})
