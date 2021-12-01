@@ -2,97 +2,13 @@ package grpcsteps
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 	"net"
-	"reflect"
-	"regexp"
-	"strings"
-	"time"
 
 	"github.com/cucumber/godog"
-	"github.com/nhatthm/grpcmock"
-	"github.com/nhatthm/grpcmock/invoker"
 	grpcReflect "github.com/nhatthm/grpcmock/reflect"
 	"github.com/nhatthm/grpcmock/service"
-	"github.com/stretchr/testify/assert"
-	"github.com/swaggest/assertjson"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
-
-var (
-	matchFirstCap = regexp.MustCompile("(.)([A-Z][a-z]+)")
-	matchAllCap   = regexp.MustCompile("([a-z0-9])([A-Z])")
-)
-
-type clientExpect struct {
-	invoker     *invoker.Invoker
-	response    interface{}
-	responseErr error
-	isPopulated bool
-}
-
-func (e *clientExpect) doRequest() (interface{}, error) {
-	if e.isPopulated {
-		return e.response, e.responseErr
-	}
-
-	e.isPopulated = true
-	e.responseErr = e.invoker.Invoke(context.Background())
-
-	return e.response, e.responseErr
-}
-
-func (e *clientExpect) assertResponse(expected string) error {
-	actual, err := e.doRequest()
-	if err != nil {
-		return err
-	}
-
-	t := &testT{}
-
-	assertjson.EqualMarshal(t, []byte(expected), actual)
-
-	return t.error
-}
-
-func (e *clientExpect) assertErrorCode(expected codes.Code) error {
-	_, err := e.doRequest()
-	if err == nil {
-		if expected != codes.OK {
-			return fmt.Errorf("got no error, want %q", expected.String()) // nolint: goerr113
-		}
-
-		return nil
-	}
-
-	actual := statusError(err)
-	t := &testT{}
-
-	assert.Equalf(t, expected, actual.Code(), "unexpected error code, got %q, want %q", actual.Code(), expected)
-
-	return t.error
-}
-
-func (e *clientExpect) assertErrorMessage(expected string) error {
-	_, err := e.doRequest()
-	if err == nil {
-		if expected != "" {
-			return fmt.Errorf("got no error, want %q", expected) // nolint: goerr113
-		}
-
-		return nil
-	}
-
-	actual := statusError(err)
-	t := &testT{}
-
-	assert.Equalf(t, actual.Message(), expected, "unexpected error message, got %q, want %q", actual.Message(), expected)
-
-	return t.error
-}
 
 // Service contains needed information to form a GRPC request.
 type Service struct {
@@ -108,7 +24,6 @@ type ServiceOption func(s *Service)
 // Client is a grpc client for godog.
 type Client struct {
 	services map[string]*Service
-	expect   *clientExpect
 
 	defaultSvcOptions []ServiceOption
 }
@@ -144,93 +59,68 @@ func (c *Client) registerService(id string, svc interface{}, opts ...ServiceOpti
 }
 
 // RegisterContext registers to godog scenario.
-func (c *Client) RegisterContext(ctx *godog.ScenarioContext) {
-	ctx.Before(func(context.Context, *godog.Scenario) (context.Context, error) {
-		c.expect = nil
+func (c *Client) RegisterContext(sc *godog.ScenarioContext) {
+	sc.Step(`^I request(?: a)? (?:gRPC|GRPC|grpc)(?: method)? "([^"]*)" with payload:?$`, c.iRequestWithPayload)
 
-		return nil, nil
-	})
+	sc.Step(`^I should have(?: a)? (?:gRPC|GRPC|grpc) response with payload:?$`, c.iShouldHaveResponseWithResponse)
+	sc.Step(`^I should have(?: a)? (?:gRPC|GRPC|grpc) response with code "([^"]*)"$`, c.iShouldHaveResponseWithCode)
+	sc.Step(`^I should have(?: a)? (?:gRPC|GRPC|grpc) response with error (?:message )?"([^"]*)"$`, c.iShouldHaveResponseWithErrorMessage)
+	sc.Step(`^I should have(?: a)? (?:gRPC|GRPC|grpc) response with code "([^"]*)" and error (?:message )?"([^"]*)"$`, c.iShouldHaveResponseWithCodeAndErrorMessage)
+	sc.Step(`^I should have(?: a)? (?:gRPC|GRPC|grpc) response with error(?: message)?:$`, c.iShouldHaveResponseWithErrorMessageFromDocString)
+	sc.Step(`^I should have(?: a)? (?:gRPC|GRPC|grpc) response with code "([^"]*)" and error(?: message)?:$`, c.iShouldHaveResponseWithCodeAndErrorMessageFromDocString)
 
-	ctx.Step(`^I request(?: a)? (?:gRPC|GRPC|grpc)(?: method)? "([^"]*)" with payload:?$`, c.iRequestWithPayload)
-	ctx.Step(`^The (?:gRPC|GRPC|grpc) request has(?: a)? header "([^"]*): ([^"]*)"$`, c.iRequestWithHeader)
-	ctx.Step(`^The (?:gRPC|GRPC|grpc) request timeout is "([^"]*)"$`, c.iRequestWithTimeout)
-
-	ctx.Step(`^I should have(?: a)? (?:gRPC|GRPC|grpc) response with payload:?$`, c.iShouldHaveResponseWithResponse)
-	ctx.Step(`^I should have(?: a)? (?:gRPC|GRPC|grpc) response with code "([^"]*)"$`, c.iShouldHaveResponseWithCode)
-	ctx.Step(`^I should have(?: a)? (?:gRPC|GRPC|grpc) response with error (?:message )?"([^"]*)"$`, c.iShouldHaveResponseWithErrorMessage)
-	ctx.Step(`^I should have(?: a)? (?:gRPC|GRPC|grpc) response with code "([^"]*)" and error (?:message )?"([^"]*)"$`, c.iShouldHaveResponseWithCodeAndErrorMessage)
-	ctx.Step(`^I should have(?: a)? (?:gRPC|GRPC|grpc) response with error(?: message)?:$`, c.iShouldHaveResponseWithErrorMessageFromDocString)
-	ctx.Step(`^I should have(?: a)? (?:gRPC|GRPC|grpc) response with code "([^"]*)" and error(?: message)?:$`, c.iShouldHaveResponseWithCodeAndErrorMessageFromDocString)
+	registerRequestPlanner(sc)
 }
 
-func (c *Client) iRequestWithPayload(method string, params *godog.DocString) error {
+func (c *Client) iRequestWithPayload(ctx context.Context, method string, data *godog.DocString) (context.Context, error) {
 	svc, ok := c.services[method]
 	if !ok {
-		return ErrInvalidGRPCMethod
+		return ctx, ErrInvalidGRPCMethod
 	}
 
-	e, err := newExpect(svc, params.Content)
+	payload, err := toPayload(svc.MethodType, svc.Input, data.Content)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	c.expect = e
-
-	return nil
+	return newClientRequestPlannerContext(ctx, svc, payload), nil
 }
 
-func (c *Client) iRequestWithHeader(header, value string) error {
-	c.expect.invoker.WithInvokeOption(grpcmock.WithHeader(header, value))
-
-	return nil
+func (c *Client) iShouldHaveResponseWithResponse(ctx context.Context, response *godog.DocString) error {
+	return assertServerResponsePayload(clientRequestFromContext(ctx), response.Content)
 }
 
-func (c *Client) iRequestWithTimeout(t string) error {
-	timeout, err := time.ParseDuration(t)
-	if err != nil {
-		return err
-	}
-
-	c.expect.invoker.WithTimeout(timeout)
-
-	return nil
-}
-
-func (c *Client) iShouldHaveResponseWithResponse(response *godog.DocString) error {
-	return c.expect.assertResponse(response.Content)
-}
-
-func (c *Client) iShouldHaveResponseWithCode(codeValue string) error {
+func (c *Client) iShouldHaveResponseWithCode(ctx context.Context, codeValue string) error {
 	code, err := toStatusCode(codeValue)
 	if err != nil {
 		return err
 	}
 
-	return c.expect.assertErrorCode(code)
+	return assertServerResponseErrorCode(clientRequestFromContext(ctx), code)
 }
 
-func (c *Client) iShouldHaveResponseWithErrorMessage(err string) error {
-	return c.expect.assertErrorMessage(err)
+func (c *Client) iShouldHaveResponseWithErrorMessage(ctx context.Context, err string) error {
+	return assertServerResponseErrorMessage(clientRequestFromContext(ctx), err)
 }
 
-func (c *Client) iShouldHaveResponseWithCodeAndErrorMessage(codeValue, err string) error {
-	if err := c.iShouldHaveResponseWithCode(codeValue); err != nil {
+func (c *Client) iShouldHaveResponseWithCodeAndErrorMessage(ctx context.Context, codeValue, err string) error {
+	if err := c.iShouldHaveResponseWithCode(ctx, codeValue); err != nil {
 		return err
 	}
 
-	return c.expect.assertErrorMessage(err)
+	return c.iShouldHaveResponseWithErrorMessage(ctx, err)
 }
 
-func (c *Client) iShouldHaveResponseWithErrorMessageFromDocString(err *godog.DocString) error {
-	return c.iShouldHaveResponseWithErrorMessage(err.Content)
+func (c *Client) iShouldHaveResponseWithErrorMessageFromDocString(ctx context.Context, err *godog.DocString) error {
+	return c.iShouldHaveResponseWithErrorMessage(ctx, err.Content)
 }
 
-func (c *Client) iShouldHaveResponseWithCodeAndErrorMessageFromDocString(codeValue string, err *godog.DocString) error {
-	if err := c.iShouldHaveResponseWithCode(codeValue); err != nil {
+func (c *Client) iShouldHaveResponseWithCodeAndErrorMessageFromDocString(ctx context.Context, codeValue string, err *godog.DocString) error {
+	if err := c.iShouldHaveResponseWithCode(ctx, codeValue); err != nil {
 		return err
 	}
 
-	return c.expect.assertErrorMessage(err.Content)
+	return c.iShouldHaveResponseWithErrorMessage(ctx, err.Content)
 }
 
 // NewClient initiates a new grpc server extension for testing.
@@ -298,105 +188,4 @@ func WithDialOptions(opts ...grpc.DialOption) ServiceOption {
 	return func(s *Service) {
 		s.DialOptions = opts
 	}
-}
-
-func newExpect(svc *Service, data string) (*clientExpect, error) {
-	payload, err := toPayload(svc.MethodType, svc.Input, data)
-	if err != nil {
-		return nil, err
-	}
-
-	response := newResponse(svc.MethodType, svc.Output)
-	opts := []invoker.Option{
-		invoker.WithAddress(svc.Address),
-	}
-
-	switch svc.MethodType {
-	case service.TypeBidirectionalStream:
-		opts = append(opts, invoker.WithBidirectionalStreamHandler(grpcmock.SendAndRecvAll(payload, response)))
-
-	case service.TypeClientStream:
-		opts = append(opts, invoker.WithInputStreamHandler(grpcmock.SendAll(payload)),
-			invoker.WithOutput(response),
-		)
-
-	case service.TypeServerStream:
-		opts = append(opts, invoker.WithInput(payload),
-			invoker.WithOutputStreamHandler(grpcmock.RecvAll(response)),
-		)
-
-	case service.TypeUnary:
-		fallthrough
-	default:
-		opts = append(opts, invoker.WithInput(payload),
-			invoker.WithOutput(response),
-		)
-	}
-
-	opts = append(opts, invoker.WithDialOptions(svc.DialOptions...))
-
-	i := invoker.New(svc.Method, opts...)
-
-	return &clientExpect{
-		invoker:     i,
-		response:    response,
-		responseErr: nil,
-	}, nil
-}
-
-func newResponse(methodType service.Type, out interface{}) interface{} {
-	result := reflect.New(grpcReflect.UnwrapType(out))
-
-	if service.IsMethodServerStream(methodType) ||
-		service.IsMethodBidirectionalStream(methodType) {
-		value := reflect.MakeSlice(reflect.SliceOf(result.Type()), 0, 0)
-		result = reflect.New(value.Type())
-
-		result.Elem().Set(value)
-	}
-
-	return result.Interface()
-}
-
-func toPayload(methodType service.Type, in interface{}, data string) (interface{}, error) {
-	result := reflect.New(grpcReflect.UnwrapType(in))
-	isSlice := service.IsMethodClientStream(methodType) || service.IsMethodBidirectionalStream(methodType)
-
-	if isSlice {
-		result = reflect.MakeSlice(reflect.SliceOf(result.Type()), 0, 0)
-		result = reflect.New(result.Type())
-	}
-
-	if err := json.Unmarshal([]byte(data), result.Interface()); err != nil {
-		return nil, err
-	}
-
-	if isSlice {
-		return result.Elem().Interface(), nil
-	}
-
-	return result.Interface(), nil
-}
-
-func toStatusCode(data string) (codes.Code, error) {
-	data = fmt.Sprintf("%q", toUpperSnakeCase(data))
-
-	var code codes.Code
-
-	if err := code.UnmarshalJSON([]byte(data)); err != nil {
-		return codes.Unknown, err
-	}
-
-	return code, nil
-}
-
-func toUpperSnakeCase(str string) string {
-	snake := matchFirstCap.ReplaceAllString(str, "${1}_${2}")
-	snake = matchAllCap.ReplaceAllString(snake, "${1}_${2}")
-
-	return strings.ToUpper(snake)
-}
-
-func statusError(err error) *status.Status {
-	return status.Convert(err)
 }
