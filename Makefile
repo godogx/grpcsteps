@@ -2,6 +2,7 @@ VENDOR_DIR = vendor
 
 GO ?= go
 GOLANGCI_LINT ?= golangci-lint
+GHERKIN_LINT ?= gherkin-lint
 
 .PHONY: $(VENDOR_DIR) lint test test-unit
 
@@ -11,6 +12,7 @@ $(VENDOR_DIR):
 
 lint:
 	@$(GOLANGCI_LINT) run
+	@$(GHERKIN_LINT) -c .gherkin-lintrc features/*
 
 test: test-unit
 
