@@ -1,4 +1,4 @@
-Feature: Get Item
+Feature: Get Item with server panic
 
     Scenario: Server Panic
         When I request a gRPC method "/grpctest.ItemService/GetItem" with payload:

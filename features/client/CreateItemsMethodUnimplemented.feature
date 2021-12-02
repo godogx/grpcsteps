@@ -1,4 +1,4 @@
-Feature: Create Items
+Feature: Create Items with method unimplemented error
 
     Scenario: Method is unimplemented
         When I request a gRPC method "/grpctest.ItemService/CreateItems" with payload:

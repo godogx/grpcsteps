@@ -1,4 +1,4 @@
-Feature: Create Items
+Feature: Create Items with internal server error
 
     Scenario: Internal Server Error
         When I request a gRPC method "/grpctest.ItemService/CreateItems" with payload:
@@ -7,4 +7,4 @@ Feature: Create Items
         """
 
         Then I should have a gRPC response with code "INTERNAL"
-        Then I should have a gRPC response with error message "Internal Server Error"
+        And I should have a gRPC response with error message "Internal Server Error"

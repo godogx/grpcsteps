@@ -1,4 +1,5 @@
-Feature:
+Feature: Server is not ready
+
     Scenario: Server is not online
         When I request a gRPC method "/NoServer/GetItem" with payload:
         """

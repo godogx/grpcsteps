@@ -1,4 +1,4 @@
-Feature: List Items
+Feature: List Items with error in doc string
 
     Scenario: With only error message
         When I request a gRPC method "/grpctest.ItemService/ListItems" with payload:
