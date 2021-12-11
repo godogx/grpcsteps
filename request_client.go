@@ -93,12 +93,7 @@ func clientRequestInvokerOptions(svc *Service, payload interface{}, out interfac
 type missingClientRequest struct{}
 
 func (m missingClientRequest) Do() ([]byte, error) {
-	//goland:noinspection GoErrorStringFormat
-	return nil, fmt.Errorf(
-		"%w, did you forget to setup a gprc request with `%s` in the scenario?",
-		ErrNoClientRequestInContext,
-		`^I request(?: a)? (?:gRPC|GRPC|grpc)(?: method)? "([^"]*)" with payload:?$`,
-	)
+	return nil, missingClientRequestPlannerErr()
 }
 
 func clientRequestFromContext(ctx context.Context) clientRequest {
@@ -156,4 +151,20 @@ func newServerOutput(methodType service.Type, out interface{}) interface{} {
 	}
 
 	return result.Interface()
+}
+
+func missingClientRequestPlannerErr() error {
+	//goland:noinspection GoErrorStringFormat
+	return fmt.Errorf(
+		"%w, did you forget to setup a gprc request in the scenario?\n\nFor example:\n%s",
+		ErrNoClientRequestInContext,
+		`
+        When I request a gRPC method "/grpctest.ItemService/GetItem" with payload:
+        """
+        {
+            "id": 42
+        }
+        """
+`,
+	)
 }

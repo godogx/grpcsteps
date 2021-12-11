@@ -13,48 +13,72 @@ import (
 func TestToPayload(t *testing.T) {
 	t.Parallel()
 
+	strPtr := func(s string) *string {
+		return &s
+	}
+
 	testCases := []struct {
 		scenario       string
 		methodType     service.Type
-		data           string
+		data           *string
 		expectedResult interface{}
 		expectedError  string
 	}{
 		{
 			scenario:      "invalid data for unary",
 			methodType:    service.TypeUnary,
-			data:          "42",
+			data:          strPtr("42"),
 			expectedError: "json: cannot unmarshal number into Go value of type grpctest.Item",
 		},
 		{
 			scenario:      "invalid data for stream",
 			methodType:    service.TypeClientStream,
-			data:          `{"id": 42}`,
+			data:          strPtr(`{"id": 42}`),
 			expectedError: "json: cannot unmarshal object into Go value of type []*grpctest.Item",
 		},
 		{
 			scenario:       "unary payload",
 			methodType:     service.TypeUnary,
-			data:           `{"id": 42}`,
+			data:           strPtr(`{"id": 42}`),
 			expectedResult: &grpctest.Item{Id: 42},
+		},
+		{
+			scenario:       "unary payload (nil)",
+			methodType:     service.TypeUnary,
+			expectedResult: (*grpctest.Item)(nil),
 		},
 		{
 			scenario:       "server stream payload",
 			methodType:     service.TypeServerStream,
-			data:           `{"id": 42}`,
+			data:           strPtr(`{"id": 42}`),
 			expectedResult: &grpctest.Item{Id: 42},
+		},
+		{
+			scenario:       "server stream payload (nil)",
+			methodType:     service.TypeServerStream,
+			expectedResult: (*grpctest.Item)(nil),
 		},
 		{
 			scenario:       "client stream payload",
 			methodType:     service.TypeClientStream,
-			data:           `[{"id": 42}]`,
+			data:           strPtr(`[{"id": 42}]`),
 			expectedResult: []*grpctest.Item{{Id: 42}},
+		},
+		{
+			scenario:       "client stream payload (nil)",
+			methodType:     service.TypeClientStream,
+			expectedResult: ([]*grpctest.Item)(nil),
 		},
 		{
 			scenario:       "bidirectional stream payload",
 			methodType:     service.TypeBidirectionalStream,
-			data:           `[{"id": 42}]`,
+			data:           strPtr(`[{"id": 42}]`),
 			expectedResult: []*grpctest.Item{{Id: 42}},
+		},
+		{
+			scenario:       "bidirectional stream payload (nil)",
+			methodType:     service.TypeBidirectionalStream,
+			expectedResult: ([]*grpctest.Item)(nil),
 		},
 	}
 

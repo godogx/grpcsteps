@@ -17,16 +17,23 @@ var (
 	matchAllCap   = regexp.MustCompile("([a-z0-9])([A-Z])")
 )
 
-func toPayload(methodType service.Type, in interface{}, data string) (interface{}, error) {
+func unmarshal(in interface{}, isSlice bool, data *string) (interface{}, error) {
 	result := reflect.New(grpcReflect.UnwrapType(in))
-	isSlice := service.IsMethodClientStream(methodType) || service.IsMethodBidirectionalStream(methodType)
 
 	if isSlice {
 		result = reflect.MakeSlice(reflect.SliceOf(result.Type()), 0, 0)
 		result = reflect.New(result.Type())
 	}
 
-	if err := json.Unmarshal([]byte(data), result.Interface()); err != nil {
+	if data == nil {
+		if isSlice {
+			return reflect.Zero(result.Elem().Type()).Interface(), nil
+		}
+
+		return reflect.Zero(result.Type()).Interface(), nil
+	}
+
+	if err := json.Unmarshal([]byte(*data), result.Interface()); err != nil {
 		return nil, err
 	}
 
@@ -35,6 +42,12 @@ func toPayload(methodType service.Type, in interface{}, data string) (interface{
 	}
 
 	return result.Interface(), nil
+}
+
+func toPayload(methodType service.Type, in interface{}, data *string) (interface{}, error) {
+	isSlice := service.IsMethodClientStream(methodType) || service.IsMethodBidirectionalStream(methodType)
+
+	return unmarshal(in, isSlice, data)
 }
 
 func toStatusCode(data string) (codes.Code, error) {

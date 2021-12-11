@@ -2,33 +2,77 @@ package grpcsteps_test
 
 import (
 	"bytes"
-	"testing"
+	"fmt"
 	"time"
 
 	"github.com/cucumber/godog"
-
-	"github.com/godogx/grpcsteps"
 )
 
-func runSuite(t *testing.T, c *grpcsteps.Client, paths ...string) {
-	t.Helper()
+type suiteT interface {
+	Errorf(format string, args ...interface{})
+}
 
+type suiteOption func(ts *godog.TestSuite)
+
+func runSuite(t suiteT, opts ...suiteOption) {
 	buf := bytes.NewBuffer(nil)
 
 	suite := godog.TestSuite{
-		ScenarioInitializer: func(ctx *godog.ScenarioContext) {
-			c.RegisterContext(ctx)
-		},
 		Options: &godog.Options{
 			Format:    "pretty",
 			Output:    buf,
-			Paths:     paths,
 			Strict:    true,
 			Randomize: time.Now().UTC().UnixNano(),
 		},
 	}
 
-	if status := suite.Run(); status != 0 {
-		t.Fatal(buf.String())
+	for _, o := range opts {
+		o(&suite)
 	}
+
+	if status := suite.Run(); status != 0 {
+		t.Errorf(buf.String())
+	}
+}
+
+func initSuite(init func(ctx *godog.TestSuiteContext)) suiteOption {
+	return func(ts *godog.TestSuite) {
+		ts.TestSuiteInitializer = init
+	}
+}
+
+func afterSuite(fn func()) suiteOption {
+	return initSuite(func(tsc *godog.TestSuiteContext) {
+		tsc.AfterSuite(fn)
+	})
+}
+
+func initScenario(initializers ...func(ctx *godog.ScenarioContext)) suiteOption {
+	return func(ts *godog.TestSuite) {
+		ts.ScenarioInitializer = func(ctx *godog.ScenarioContext) {
+			for _, i := range initializers {
+				i(ctx)
+			}
+		}
+	}
+}
+
+func featureFiles(paths ...string) suiteOption {
+	return func(ts *godog.TestSuite) {
+		ts.Options.Paths = paths
+	}
+}
+
+func noColors() suiteOption {
+	return func(ts *godog.TestSuite) {
+		ts.Options.NoColors = true
+	}
+}
+
+type testT struct {
+	error error
+}
+
+func (t *testT) Errorf(format string, args ...interface{}) {
+	t.error = fmt.Errorf(format, args...)
 }

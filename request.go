@@ -17,8 +17,8 @@ type requestPlanner interface {
 }
 
 func registerRequestPlanner(sc *godog.ScenarioContext) {
-	sc.Step(`^The (?:gRPC|GRPC|grpc) request has(?: a)? header "([^"]*): ([^"]*)"$`, planRequestWithHeader)
-	sc.Step(`^The (?:gRPC|GRPC|grpc) request timeout is "([^"]*)"$`, planRequestWithTimeout)
+	sc.Step(`^[tT]he (?:gRPC|GRPC|grpc) request has(?: a)? header "([^"]*): ([^"]*)"$`, planRequestWithHeader)
+	sc.Step(`^[tT]he (?:gRPC|GRPC|grpc) request timeout is "([^"]*)"$`, planRequestWithTimeout)
 }
 
 func planRequestWithHeader(ctx context.Context, header, value string) error {

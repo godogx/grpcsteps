@@ -14,7 +14,8 @@ import (
 func TestClient_iRequestWithPayload_InvalidMethod(t *testing.T) {
 	t.Parallel()
 
-	_, err := NewClient().iRequestWithPayload(context.Background(), "", nil)
+	_, err := NewClient().iRequestWithPayload(context.Background(), "", "")
+
 	expected := `invalid grpc method`
 
 	assert.EqualError(t, err, expected)
@@ -25,8 +26,33 @@ func TestClient_iRequestWithPayload_InvalidPayload(t *testing.T) {
 
 	_, err := NewClient(
 		RegisterService(grpctest.RegisterItemServiceServer),
-	).iRequestWithPayload(context.Background(), "/grpctest.ItemService/GetItem", &godog.DocString{Content: "42"})
+	).iRequestWithPayload(context.Background(), "/grpctest.ItemService/GetItem", "42")
+
 	expected := `json: cannot unmarshal number into Go value of type grpctest.GetItemRequest`
+
+	assert.EqualError(t, err, expected)
+}
+
+func TestClient_iRequestWithPayloadFromFile_ReadFileError(t *testing.T) {
+	t.Parallel()
+
+	_, err := NewClient(
+		RegisterService(grpctest.RegisterItemServiceServer),
+	).iRequestWithPayloadFromFile(context.Background(), "/grpctest.ItemService/GetItem", "not_found")
+
+	expected := `open not_found: no such file or directory`
+
+	assert.EqualError(t, err, expected)
+}
+
+func TestClient_iShouldHaveResponseWithPayloadFromFile_ReadFileError(t *testing.T) {
+	t.Parallel()
+
+	err := NewClient(
+		RegisterService(grpctest.RegisterItemServiceServer),
+	).iShouldHaveResponseWithPayloadFromFile(context.Background(), "not_found")
+
+	expected := `open not_found: no such file or directory`
 
 	assert.EqualError(t, err, expected)
 }
