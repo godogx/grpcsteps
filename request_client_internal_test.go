@@ -27,7 +27,17 @@ func TestClientRequestInContext(t *testing.T) {
 func TestMissingClientRequest(t *testing.T) {
 	t.Parallel()
 
-	expected := "no client request in context, did you forget to setup a gprc request with `^I request(?: a)? (?:gRPC|GRPC|grpc)(?: method)? \"([^\"]*)\" with payload:?$` in the scenario?"
+	expected := `no client request in context, did you forget to setup a gprc request in the scenario?
+
+For example:
+
+        When I request a gRPC method "/grpctest.ItemService/GetItem" with payload:
+        """
+        {
+            "id": 42
+        }
+        """
+`
 
 	r := missingClientRequest{}
 

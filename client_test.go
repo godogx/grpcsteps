@@ -28,7 +28,7 @@ func TestClient_NoServer(t *testing.T) {
 		),
 	)
 
-	runSuite(t, c, "features/client/NoServer.feature")
+	runClientSuite(t, c, "features/client/NoServer.feature")
 }
 
 func TestClient_GetItem(t *testing.T) {
@@ -94,8 +94,8 @@ func TestClient_GetItem(t *testing.T) {
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 
-			runItemServiceTest(t,
-				fmt.Sprintf("features/client/GetItem%s.feature", tc.scenario),
+			runClientTest(t,
+				fmt.Sprintf("GetItem%s", tc.scenario),
 				testSrv.GetItem(tc.handler),
 			)
 		})
@@ -161,8 +161,8 @@ func TestClient_ListItems(t *testing.T) {
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 
-			runItemServiceTest(t,
-				fmt.Sprintf("features/client/ListItems%s.feature", tc.scenario),
+			runClientTest(t,
+				fmt.Sprintf("ListItems%s", tc.scenario),
 				testSrv.ListItems(tc.handler),
 			)
 		})
@@ -229,8 +229,8 @@ func TestClient_CreateItems(t *testing.T) {
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 
-			runItemServiceTest(t,
-				fmt.Sprintf("features/client/CreateItems%s.feature", tc.scenario),
+			runClientTest(t,
+				fmt.Sprintf("CreateItems%s", tc.scenario),
 				testSrv.CreateItems(tc.handler),
 			)
 		})
@@ -299,19 +299,15 @@ func TestClient_TransformItems(t *testing.T) {
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 
-			runItemServiceTest(t,
-				fmt.Sprintf("features/client/TransformItems%s.feature", tc.scenario),
+			runClientTest(t,
+				fmt.Sprintf("TransformItems%s", tc.scenario),
 				testSrv.TransformItems(tc.handler),
 			)
 		})
 	}
 }
 
-func runItemServiceTest(
-	t *testing.T,
-	path string,
-	opts ...testSrv.ServiceOption,
-) {
+func runClientTest(t *testing.T, scenario string, opts ...testSrv.ServiceOption) {
 	t.Helper()
 
 	dialer := testSrv.StartServer(t, opts...)
@@ -326,5 +322,12 @@ func runItemServiceTest(
 		grpcsteps.RegisterService(grpctest.RegisterItemServiceServer),
 	)
 
-	runSuite(t, c, path)
+	runClientSuite(t, c, fmt.Sprintf("features/client/%s.feature", scenario))
+}
+
+func runClientSuite(t suiteT, c *grpcsteps.Client, paths ...string) {
+	runSuite(t,
+		initScenario(c.RegisterContext),
+		featureFiles(paths...),
+	)
 }

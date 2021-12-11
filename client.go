@@ -3,6 +3,7 @@ package grpcsteps
 import (
 	"context"
 	"net"
+	"os"
 
 	"github.com/cucumber/godog"
 	grpcReflect "github.com/nhatthm/grpcmock/reflect"
@@ -60,9 +61,13 @@ func (c *Client) registerService(id string, svc interface{}, opts ...ServiceOpti
 
 // RegisterContext registers to godog scenario.
 func (c *Client) RegisterContext(sc *godog.ScenarioContext) {
-	sc.Step(`^I request(?: a)? (?:gRPC|GRPC|grpc)(?: method)? "([^"]*)" with payload:?$`, c.iRequestWithPayload)
+	sc.Step(`^I request(?: a)? (?:gRPC|GRPC|grpc)(?: method)? "([^"]*)" with payload:?$`, c.iRequestWithPayloadFromDocString)
+	sc.Step(`^I request(?: a)? (?:gRPC|GRPC|grpc)(?: method)? "([^"]*)" with payload from file "([^"]+)"$`, c.iRequestWithPayloadFromFile)
+	sc.Step(`^I request(?: a)? (?:gRPC|GRPC|grpc)(?: method)? "([^"]*)" with payload from file:$`, c.iRequestWithPayloadFromFileDocString)
 
-	sc.Step(`^I should have(?: a)? (?:gRPC|GRPC|grpc) response with payload:?$`, c.iShouldHaveResponseWithResponse)
+	sc.Step(`^I should have(?: a)? (?:gRPC|GRPC|grpc) response with payload:?$`, c.iShouldHaveResponseWithPayloadFromDocString)
+	sc.Step(`^I should have(?: a)? (?:gRPC|GRPC|grpc) response with payload from file "([^"]+)"$`, c.iShouldHaveResponseWithPayloadFromFile)
+	sc.Step(`^I should have(?: a)? (?:gRPC|GRPC|grpc) response with payload from file:?$`, c.iShouldHaveResponseWithPayloadFromFileDocString)
 	sc.Step(`^I should have(?: a)? (?:gRPC|GRPC|grpc) response with code "([^"]*)"$`, c.iShouldHaveResponseWithCode)
 	sc.Step(`^I should have(?: a)? (?:gRPC|GRPC|grpc) response with error (?:message )?"([^"]*)"$`, c.iShouldHaveResponseWithErrorMessage)
 	sc.Step(`^I should have(?: a)? (?:gRPC|GRPC|grpc) response with code "([^"]*)" and error (?:message )?"([^"]*)"$`, c.iShouldHaveResponseWithCodeAndErrorMessage)
@@ -72,22 +77,56 @@ func (c *Client) RegisterContext(sc *godog.ScenarioContext) {
 	registerRequestPlanner(sc)
 }
 
-func (c *Client) iRequestWithPayload(ctx context.Context, method string, data *godog.DocString) (context.Context, error) {
+func (c *Client) iRequestWithPayload(ctx context.Context, method string, data string) (context.Context, error) {
 	svc, ok := c.services[method]
 	if !ok {
 		return ctx, ErrInvalidGRPCMethod
 	}
 
-	payload, err := toPayload(svc.MethodType, svc.Input, data.Content)
+	payload, err := toPayload(svc.MethodType, svc.Input, &data)
 	if err != nil {
-		return nil, err
+		return ctx, err
 	}
 
 	return newClientRequestPlannerContext(ctx, svc, payload), nil
 }
 
-func (c *Client) iShouldHaveResponseWithResponse(ctx context.Context, response *godog.DocString) error {
-	return assertServerResponsePayload(clientRequestFromContext(ctx), response.Content)
+func (c *Client) iRequestWithPayloadFromDocString(ctx context.Context, method string, payload *godog.DocString) (context.Context, error) {
+	return c.iRequestWithPayload(ctx, method, payload.Content)
+}
+
+func (c *Client) iRequestWithPayloadFromFile(ctx context.Context, method string, path string) (context.Context, error) {
+	payload, err := os.ReadFile(path) // nolint: gosec
+	if err != nil {
+		return ctx, err
+	}
+
+	return c.iRequestWithPayload(ctx, method, string(payload))
+}
+
+func (c *Client) iRequestWithPayloadFromFileDocString(ctx context.Context, method string, path *godog.DocString) (context.Context, error) {
+	return c.iRequestWithPayloadFromFile(ctx, method, path.Content)
+}
+
+func (c *Client) iShouldHaveResponseWithPayload(ctx context.Context, response string) error {
+	return assertServerResponsePayload(clientRequestFromContext(ctx), response)
+}
+
+func (c *Client) iShouldHaveResponseWithPayloadFromDocString(ctx context.Context, response *godog.DocString) error {
+	return c.iShouldHaveResponseWithPayload(ctx, response.Content)
+}
+
+func (c *Client) iShouldHaveResponseWithPayloadFromFile(ctx context.Context, path string) error {
+	payload, err := os.ReadFile(path) // nolint: gosec
+	if err != nil {
+		return err
+	}
+
+	return c.iShouldHaveResponseWithPayload(ctx, string(payload))
+}
+
+func (c *Client) iShouldHaveResponseWithPayloadFromFileDocString(ctx context.Context, path *godog.DocString) error {
+	return c.iShouldHaveResponseWithPayloadFromFile(ctx, path.Content)
 }
 
 func (c *Client) iShouldHaveResponseWithCode(ctx context.Context, codeValue string) error {
