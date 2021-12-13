@@ -207,8 +207,8 @@ github.com/nhatthm/aferomock v0.3.0 h1:VaQORa7jawxeTi7yAAayE8ZUo7lYp5yyDn9j3wwKJ
 github.com/nhatthm/aferomock v0.3.0/go.mod h1:/oTcy0NDM+qQJEEOWiuiKuogilXvv/KZcdaXaP/rX3g=
 github.com/nhatthm/go-matcher v1.3.1 h1:UQ3TuoYEzt7CBad94cOCgJ07jQO54KUWXqNbFUhlT54=
 github.com/nhatthm/go-matcher v1.3.1/go.mod h1:tkXI3EdQrowQ2I9CZMmC7wJYqGqMWhb4hv4YdVpuKCo=
-github.com/nhatthm/grpcmock v0.13.1 h1:Wd2f5WMNZOgIMDp8fcrIelez+T3BaIa8bMr+GoxP/Ew=
-github.com/nhatthm/grpcmock v0.13.1/go.mod h1:+vZBmswXu65G6EG1IqY4E14ZEyAu0CMHth1P17Qew6c=
+github.com/nhatthm/grpcmock v0.14.0 h1:qAeRORap50weC+DDv8bVdenbazFyy+f3zyNhXR/ymLo=
+github.com/nhatthm/grpcmock v0.14.0/go.mod h1:+vZBmswXu65G6EG1IqY4E14ZEyAu0CMHth1P17Qew6c=
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e/go.mod h1:zD1mROLANZcx1PVRCS0qkT7pwLkGfwJo4zjcN/Tysno=
 github.com/nxadm/tail v1.4.4/go.mod h1:kenIhsEOeOJmVchQTgglprH7qJGnHDVpk1VPCcaMI8A=
 github.com/nxadm/tail v1.4.8 h1:nPr65rt6Y5JFSKQO7qToXr7pePgD6Gwiw05lkbyAQTE=
