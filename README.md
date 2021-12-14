@@ -215,12 +215,26 @@ func TestIntegration(t *testing.T) {
 
 Mock a new request with (one of) these patterns
 
-- `^"([^"]*)" receives a (?:gRPC|GRPC|grpc) request "([^"]*)"$`
-- `^"([^"]*)" receives a (?:gRPC|GRPC|grpc) request "([^"]*)" with payload:$`
-- `^"([^"]*)" receives a (?:gRPC|GRPC|grpc) request "([^"]*)" with payload from file "([^"]+)"$`
-- `^"([^"]*)" receives a (?:gRPC|GRPC|grpc) request "([^"]*)" with payload from file:$`
+- `^"([^"]*)" receives [a1] (?:gRPC|GRPC|grpc) request "([^"]*)"$`
+- `^"([^"]*)" receives [a1] (?:gRPC|GRPC|grpc) request "([^"]*)" with payload:$`
+- `^"([^"]*)" receives [a1] (?:gRPC|GRPC|grpc) request "([^"]*)" with payload from file "([^"]+)"$`
+- `^"([^"]*)" receives [a1] (?:gRPC|GRPC|grpc) request "([^"]*)" with payload from file:$`
 
-Optionally, you can:
+Or, if the service receives multiple requests with the same condition, you could use
+
+- `^"([^"]*)" receives ([0-9]+) (?:gRPC|GRPC|grpc) requests "([^"]*)"$`
+- `^"([^"]*)" receives ([0-9]+) (?:gRPC|GRPC|grpc) requests "([^"]*)" with payload:$`
+- `^"([^"]*)" receives ([0-9]+) (?:gRPC|GRPC|grpc) requests "([^"]*)" with payload from file "([^"]+)"$`
+- `^"([^"]*)" receives ([0-9]+) (?:gRPC|GRPC|grpc) requests "([^"]*)" with payload from file:$`
+
+Or, if you don't know how many times it's going to be, use
+
+- `^"([^"]*)" receives (?:some|many|several) (?:gRPC|GRPC|grpc) requests "([^"]*)"$`
+- `^"([^"]*)" receives (?:some|many|several) (?:gRPC|GRPC|grpc) requests "([^"]*)" with payload:$`
+- `^"([^"]*)" receives (?:some|many|several) (?:gRPC|GRPC|grpc) requests "([^"]*)" with payload from file "([^"]+)"$`
+- `^"([^"]*)" receives (?:some|many|several) (?:gRPC|GRPC|grpc) requests "([^"]*)" with payload from file:$`
+
+And, Optionally, you can:
 
 - Add a header to the request with <br/>
   `^The (?:gRPC|GRPC|grpc) request has(?: a)? header "([^"]*): ([^"]*)"$`

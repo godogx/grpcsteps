@@ -1,6 +1,6 @@
-Feature: Error when expectations were not met
+Feature: Expect a request but receive nothing
 
-    Scenario: there is one expectation
+    Scenario: there is one request
         Given "item-service" receives a grpc request "/grpctest.ItemService/GetItem" with payload:
         """
         {
@@ -10,7 +10,7 @@ Feature: Error when expectations were not met
         And the grpc service responds with payload:
         """
         {
-            "id": 42
+            "id": 42,
             "name": "Item #42"
         }
         """

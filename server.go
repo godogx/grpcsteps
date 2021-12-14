@@ -14,11 +14,12 @@ import (
 )
 
 const (
-	methodServerExpect      = "Expect"
-	methodServerWithPayload = "WithPayload"
-	methodServerWithHeader  = "WithHeader"
-	methodServerReturn      = "Return"
-	methodServerReturnError = "ReturnError"
+	methodServerExpect       = "Expect"
+	methodRequestWithPayload = "WithPayload"
+	methodRequestWithHeader  = "WithHeader"
+	methodRequestReturn      = "Return"
+	methodRequestReturnError = "ReturnError"
+	methodRequestTimes       = "Times"
 )
 
 // ExternalServiceManager is a grpc server for godog.
@@ -42,10 +43,20 @@ func (m *ExternalServiceManager) RegisterContext(sc *godog.ScenarioContext) {
 		return ctx, m.assertExpectationsWereMet()
 	})
 
-	sc.Step(`^"([^"]*)" receives a (?:gRPC|GRPC|grpc) request "([^"]*)"$`, m.receiveRequestWithoutPayload)
-	sc.Step(`^"([^"]*)" receives a (?:gRPC|GRPC|grpc) request "([^"]*)" with payload:$`, m.receiveRequestWithPayloadFromDocString)
-	sc.Step(`^"([^"]*)" receives a (?:gRPC|GRPC|grpc) request "([^"]*)" with payload from file "([^"]+)"$`, m.receiveRequestWithPayloadFromFile)
-	sc.Step(`^"([^"]*)" receives a (?:gRPC|GRPC|grpc) request "([^"]*)" with payload from file:$`, m.receiveRequestWithPayloadFromFileDocString)
+	sc.Step(`^"([^"]*)" receives [a1] (?:gRPC|GRPC|grpc) request "([^"]*)"$`, m.receiveOneRequestWithoutPayload)
+	sc.Step(`^"([^"]*)" receives [a1] (?:gRPC|GRPC|grpc) request "([^"]*)" with payload:$`, m.receiveOneRequestWithPayloadFromDocString)
+	sc.Step(`^"([^"]*)" receives [a1] (?:gRPC|GRPC|grpc) request "([^"]*)" with payload from file "([^"]+)"$`, m.receiveOneRequestWithPayloadFromFile)
+	sc.Step(`^"([^"]*)" receives [a1] (?:gRPC|GRPC|grpc) request "([^"]*)" with payload from file:$`, m.receiveOneRequestWithPayloadFromFileDocString)
+
+	sc.Step(`^"([^"]*)" receives ([0-9]+) (?:gRPC|GRPC|grpc) requests "([^"]*)"$`, m.receiveRepeatedRequestsWithoutPayload)
+	sc.Step(`^"([^"]*)" receives ([0-9]+) (?:gRPC|GRPC|grpc) requests "([^"]*)" with payload:$`, m.receiveRepeatedRequestsWithPayloadFromDocString)
+	sc.Step(`^"([^"]*)" receives ([0-9]+) (?:gRPC|GRPC|grpc) requests "([^"]*)" with payload from file "([^"]+)"$`, m.receiveRepeatedRequestsWithPayloadFromFile)
+	sc.Step(`^"([^"]*)" receives ([0-9]+) (?:gRPC|GRPC|grpc) requests "([^"]*)" with payload from file:$`, m.receiveRepeatedRequestsWithPayloadFromFileDocString)
+
+	sc.Step(`^"([^"]*)" receives (?:some|many|several) (?:gRPC|GRPC|grpc) requests "([^"]*)"$`, m.receiveManyRequestsWithoutPayload)
+	sc.Step(`^"([^"]*)" receives (?:some|many|several) (?:gRPC|GRPC|grpc) requests "([^"]*)" with payload:$`, m.receiveManyRequestsWithPayloadFromDocString)
+	sc.Step(`^"([^"]*)" receives (?:some|many|several) (?:gRPC|GRPC|grpc) requests "([^"]*)" with payload from file "([^"]+)"$`, m.receiveManyRequestsWithPayloadFromFile)
+	sc.Step(`^"([^"]*)" receives (?:some|many|several) (?:gRPC|GRPC|grpc) requests "([^"]*)" with payload from file:$`, m.receiveManyRequestsWithPayloadFromFileDocString)
 
 	sc.Step(`^[tT]he (?:gRPC|GRPC|grpc) service responds with payload:?$`, m.respondWithPayloadFromDocString)
 	sc.Step(`^[tT]he (?:gRPC|GRPC|grpc) service responds with payload from file "([^"]+)"$`, m.respondWithPayloadFromFile)
@@ -59,7 +70,7 @@ func (m *ExternalServiceManager) RegisterContext(sc *godog.ScenarioContext) {
 	registerRequestPlanner(sc)
 }
 
-func (m *ExternalServiceManager) receiveRequest(ctx context.Context, serviceID, method string, payload *string) (context.Context, error) {
+func (m *ExternalServiceManager) receiveRequest(ctx context.Context, serviceID, method string, times request.RepeatedTime, payload *string) (context.Context, error) {
 	srv, found := m.servers[serviceID]
 	if !found {
 		//goland:noinspection GoErrorStringFormat
@@ -78,34 +89,84 @@ func (m *ExternalServiceManager) receiveRequest(ctx context.Context, serviceID, 
 		return ctx, fmt.Errorf("%w: %s %s", ErrGRPCMethodNotSupported, svc.MethodType, method)
 	}
 
-	r := expectServerRequest(srv, svc, payload)
+	r := expectServerRequest(srv, svc, times, payload)
 
 	return newServerRequestPlannerContext(ctx, r), nil
 }
 
-func (m *ExternalServiceManager) receiveRequestWithoutPayload(ctx context.Context, service, method string) (context.Context, error) {
-	return m.receiveRequest(ctx, service, method, nil)
+func (m *ExternalServiceManager) receiveOneRequestWithoutPayload(ctx context.Context, service, method string) (context.Context, error) {
+	return m.receiveRequest(ctx, service, method, 1, nil)
 }
 
-func (m *ExternalServiceManager) receiveRequestWithPayload(ctx context.Context, service, method, data string) (context.Context, error) {
-	return m.receiveRequest(ctx, service, method, &data)
+func (m *ExternalServiceManager) receiveOneRequestWithPayload(ctx context.Context, service, method, data string) (context.Context, error) {
+	return m.receiveRequest(ctx, service, method, 1, &data)
 }
 
-func (m *ExternalServiceManager) receiveRequestWithPayloadFromDocString(ctx context.Context, service, method string, payload *godog.DocString) (context.Context, error) {
-	return m.receiveRequestWithPayload(ctx, service, method, payload.Content)
+func (m *ExternalServiceManager) receiveOneRequestWithPayloadFromDocString(ctx context.Context, service, method string, payload *godog.DocString) (context.Context, error) {
+	return m.receiveOneRequestWithPayload(ctx, service, method, payload.Content)
 }
 
-func (m *ExternalServiceManager) receiveRequestWithPayloadFromFile(ctx context.Context, service, method, path string) (context.Context, error) {
+func (m *ExternalServiceManager) receiveOneRequestWithPayloadFromFile(ctx context.Context, service, method, path string) (context.Context, error) {
 	payload, err := os.ReadFile(path) // nolint: gosec
 	if err != nil {
 		return ctx, err
 	}
 
-	return m.receiveRequestWithPayload(ctx, service, method, string(payload))
+	return m.receiveOneRequestWithPayload(ctx, service, method, string(payload))
 }
 
-func (m *ExternalServiceManager) receiveRequestWithPayloadFromFileDocString(ctx context.Context, service, method string, path *godog.DocString) (context.Context, error) {
-	return m.receiveRequestWithPayloadFromFile(ctx, service, method, path.Content)
+func (m *ExternalServiceManager) receiveOneRequestWithPayloadFromFileDocString(ctx context.Context, service, method string, path *godog.DocString) (context.Context, error) {
+	return m.receiveOneRequestWithPayloadFromFile(ctx, service, method, path.Content)
+}
+
+func (m *ExternalServiceManager) receiveRepeatedRequestsWithoutPayload(ctx context.Context, service string, times int, method string) (context.Context, error) {
+	return m.receiveRequest(ctx, service, method, request.RepeatedTime(times), nil)
+}
+
+func (m *ExternalServiceManager) receiveRepeatedRequestsWithPayload(ctx context.Context, service string, times int, method, data string) (context.Context, error) {
+	return m.receiveRequest(ctx, service, method, request.RepeatedTime(times), &data)
+}
+
+func (m *ExternalServiceManager) receiveRepeatedRequestsWithPayloadFromDocString(ctx context.Context, service string, times int, method string, payload *godog.DocString) (context.Context, error) {
+	return m.receiveRepeatedRequestsWithPayload(ctx, service, times, method, payload.Content)
+}
+
+func (m *ExternalServiceManager) receiveRepeatedRequestsWithPayloadFromFile(ctx context.Context, service string, times int, method, path string) (context.Context, error) {
+	payload, err := os.ReadFile(path) // nolint: gosec
+	if err != nil {
+		return ctx, err
+	}
+
+	return m.receiveRepeatedRequestsWithPayload(ctx, service, times, method, string(payload))
+}
+
+func (m *ExternalServiceManager) receiveRepeatedRequestsWithPayloadFromFileDocString(ctx context.Context, service string, times int, method string, path *godog.DocString) (context.Context, error) {
+	return m.receiveRepeatedRequestsWithPayloadFromFile(ctx, service, times, method, path.Content)
+}
+
+func (m *ExternalServiceManager) receiveManyRequestsWithoutPayload(ctx context.Context, service, method string) (context.Context, error) {
+	return m.receiveRequest(ctx, service, method, request.UnlimitedTimes, nil)
+}
+
+func (m *ExternalServiceManager) receiveManyRequestsWithPayload(ctx context.Context, service, method, data string) (context.Context, error) {
+	return m.receiveRequest(ctx, service, method, request.UnlimitedTimes, &data)
+}
+
+func (m *ExternalServiceManager) receiveManyRequestsWithPayloadFromDocString(ctx context.Context, service, method string, payload *godog.DocString) (context.Context, error) {
+	return m.receiveManyRequestsWithPayload(ctx, service, method, payload.Content)
+}
+
+func (m *ExternalServiceManager) receiveManyRequestsWithPayloadFromFile(ctx context.Context, service, method, path string) (context.Context, error) {
+	payload, err := os.ReadFile(path) // nolint: gosec
+	if err != nil {
+		return ctx, err
+	}
+
+	return m.receiveManyRequestsWithPayload(ctx, service, method, string(payload))
+}
+
+func (m *ExternalServiceManager) receiveManyRequestsWithPayloadFromFileDocString(ctx context.Context, service, method string, path *godog.DocString) (context.Context, error) {
+	return m.receiveManyRequestsWithPayloadFromFile(ctx, service, method, path.Content)
 }
 
 func (m *ExternalServiceManager) respondWithPayload(ctx context.Context, payload string) error {
@@ -205,7 +266,7 @@ func callMethod(obj interface{}, method string, args ...interface{}) []reflect.V
 		Call(callArgs)
 }
 
-func expectServerRequest(srv *grpcmock.Server, svc *service.Method, payload *string) request.Request {
+func expectServerRequest(srv *grpcmock.Server, svc *service.Method, times request.RepeatedTime, payload *string) request.Request {
 	method := fmt.Sprintf("%s%s", methodServerExpect, svc.MethodType)
 
 	result := callMethod(srv, method, svc.FullName())
@@ -215,21 +276,23 @@ func expectServerRequest(srv *grpcmock.Server, svc *service.Method, payload *str
 		expectServerRequestWithPayload(r, *payload)
 	}
 
+	callMethod(r, methodRequestTimes, times)
+
 	return r
 }
 
 func expectServerRequestWithPayload(r request.Request, payload string) {
-	callMethod(r, methodServerWithPayload, payload)
+	callMethod(r, methodRequestWithPayload, payload)
 }
 
 func expectServerRequestWithHeader(r request.Request, header string, value interface{}) {
-	callMethod(r, methodServerWithHeader, header, value)
+	callMethod(r, methodRequestWithHeader, header, value)
 }
 
 func setServerRequestReturn(r request.Request, payload string) {
-	callMethod(r, methodServerReturn, payload)
+	callMethod(r, methodRequestReturn, payload)
 }
 
 func setServerRequestReturnError(r request.Request, code codes.Code, message string) {
-	callMethod(r, methodServerReturnError, code, message)
+	callMethod(r, methodRequestReturnError, code, message)
 }
