@@ -249,3 +249,285 @@ Feature: Test all supported types with all statements
             | GetItem     | resources/fixtures/request-get-item.json     | resources/fixtures/response-get-item.json     |
             | ListItems   | resources/fixtures/request-list-items.json   | resources/fixtures/response-list-items.json   |
             | CreateItems | resources/fixtures/request-create-items.json | resources/fixtures/response-create-items.json |
+
+    Scenario Outline: Request 2 times without payload
+        Given "item-service" receives 2 grpc requests "/grpctest.ItemService/<method>"
+        And the grpc service responds with code "InvalidArgument"
+
+        # 1st request.
+        When I request a grpc method "/grpctest.ItemService/<method>" with payload:
+        """
+        <request>
+        """
+
+        Then I should have a grpc response with code "InvalidArgument"
+
+        # 2nd request.
+        When I request a grpc method "/grpctest.ItemService/<method>" with payload:
+        """
+        <request>
+        """
+
+        Then I should have a grpc response with code "InvalidArgument"
+
+        Examples:
+            | method      | request     |
+            | GetItem     | {"id":42}   |
+            | ListItems   | {}          |
+            | CreateItems | [{"id":42}] |
+
+    Scenario Outline: Request 2 times with payload
+        Given "item-service" receives 2 grpc requests "/grpctest.ItemService/<method>" with payload:
+        """
+        <expect>
+        """
+        And the grpc service responds with code "InvalidArgument"
+
+        # 1st request.
+        When I request a grpc method "/grpctest.ItemService/<method>" with payload:
+        """
+        <request>
+        """
+
+        Then I should have a grpc response with code "InvalidArgument"
+
+        # 2nd request.
+        When I request a grpc method "/grpctest.ItemService/<method>" with payload:
+        """
+        <request>
+        """
+
+        Then I should have a grpc response with code "InvalidArgument"
+
+        Examples:
+            | method      | expect                    | request     |
+            | GetItem     | {"id": "<ignore-diff>"}   | {"id":42}   |
+            | ListItems   | {}                        | {}          |
+            | CreateItems | [{"id": "<ignore-diff>"}] | [{"id":42}] |
+
+    Scenario Outline: Request 2 times with payload from file
+        Given "item-service" receives 2 grpc requests "/grpctest.ItemService/<method>" with payload from file "<request_file>"
+        And the grpc service responds with payload from file "<response_file>"
+
+        # 1st request.
+        When I request a grpc method "/grpctest.ItemService/<method>" with payload from file:
+        """
+        <request_file>
+        """
+
+        Then I should have a grpc response with payload from file:
+        """
+        <response_file>
+        """
+
+        # 2nd request.
+        When I request a grpc method "/grpctest.ItemService/<method>" with payload from file:
+        """
+        <request_file>
+        """
+
+        Then I should have a grpc response with payload from file:
+        """
+        <response_file>
+        """
+
+        Examples:
+            | method      | request_file                                 | response_file                                 |
+            | GetItem     | resources/fixtures/request-get-item.json     | resources/fixtures/response-get-item.json     |
+            | ListItems   | resources/fixtures/request-list-items.json   | resources/fixtures/response-list-items.json   |
+            | CreateItems | resources/fixtures/request-create-items.json | resources/fixtures/response-create-items.json |
+
+    Scenario Outline: Request 2 times with payload from file in doc string
+        Given "item-service" receives 2 grpc requests "/grpctest.ItemService/<method>" with payload from file:
+        """
+        <request_file>
+        """
+        And the grpc service responds with payload from file "<response_file>"
+
+        # 1st request.
+        When I request a grpc method "/grpctest.ItemService/<method>" with payload from file:
+        """
+        <request_file>
+        """
+
+        Then I should have a grpc response with payload from file:
+        """
+        <response_file>
+        """
+
+        # 2nd request.
+        When I request a grpc method "/grpctest.ItemService/<method>" with payload from file:
+        """
+        <request_file>
+        """
+
+        Then I should have a grpc response with payload from file:
+        """
+        <response_file>
+        """
+
+        Examples:
+            | method      | request_file                                 | response_file                                 |
+            | GetItem     | resources/fixtures/request-get-item.json     | resources/fixtures/response-get-item.json     |
+            | ListItems   | resources/fixtures/request-list-items.json   | resources/fixtures/response-list-items.json   |
+            | CreateItems | resources/fixtures/request-create-items.json | resources/fixtures/response-create-items.json |
+
+    Scenario Outline: Request several times without payload
+        Given "item-service" receives some grpc requests "/grpctest.ItemService/<method>"
+        And the grpc service responds with code "InvalidArgument"
+
+        # 1st request.
+        When I request a grpc method "/grpctest.ItemService/<method>" with payload:
+        """
+        <request>
+        """
+
+        Then I should have a grpc response with code "InvalidArgument"
+
+        # 2nd request.
+        When I request a grpc method "/grpctest.ItemService/<method>" with payload:
+        """
+        <request>
+        """
+
+        Then I should have a grpc response with code "InvalidArgument"
+
+        # 3rd request.
+        When I request a grpc method "/grpctest.ItemService/<method>" with payload:
+        """
+        <request>
+        """
+
+        Then I should have a grpc response with code "InvalidArgument"
+
+        Examples:
+            | method      | request     |
+            | GetItem     | {"id":42}   |
+            | ListItems   | {}          |
+            | CreateItems | [{"id":42}] |
+
+    Scenario Outline: Request several times with payload
+        Given "item-service" receives some grpc requests "/grpctest.ItemService/<method>" with payload:
+        """
+        <expect>
+        """
+        And the grpc service responds with code "InvalidArgument"
+
+        # 1st request.
+        When I request a grpc method "/grpctest.ItemService/<method>" with payload:
+        """
+        <request>
+        """
+
+        Then I should have a grpc response with code "InvalidArgument"
+
+        # 2nd request.
+        When I request a grpc method "/grpctest.ItemService/<method>" with payload:
+        """
+        <request>
+        """
+
+        Then I should have a grpc response with code "InvalidArgument"
+
+        # 3rd request.
+        When I request a grpc method "/grpctest.ItemService/<method>" with payload:
+        """
+        <request>
+        """
+
+        Then I should have a grpc response with code "InvalidArgument"
+
+        Examples:
+            | method      | expect                    | request     |
+            | GetItem     | {"id": "<ignore-diff>"}   | {"id":42}   |
+            | ListItems   | {}                        | {}          |
+            | CreateItems | [{"id": "<ignore-diff>"}] | [{"id":42}] |
+
+    Scenario Outline: Request several times with payload from file
+        Given "item-service" receives some grpc requests "/grpctest.ItemService/<method>" with payload from file "<request_file>"
+        And the grpc service responds with payload from file "<response_file>"
+
+        # 1st request.
+        When I request a grpc method "/grpctest.ItemService/<method>" with payload from file:
+        """
+        <request_file>
+        """
+
+        Then I should have a grpc response with payload from file:
+        """
+        <response_file>
+        """
+
+        # 2nd request.
+        When I request a grpc method "/grpctest.ItemService/<method>" with payload from file:
+        """
+        <request_file>
+        """
+
+        Then I should have a grpc response with payload from file:
+        """
+        <response_file>
+        """
+
+        # 3rd request.
+        When I request a grpc method "/grpctest.ItemService/<method>" with payload from file:
+        """
+        <request_file>
+        """
+
+        Then I should have a grpc response with payload from file:
+        """
+        <response_file>
+        """
+
+        Examples:
+            | method      | request_file                                 | response_file                                 |
+            | GetItem     | resources/fixtures/request-get-item.json     | resources/fixtures/response-get-item.json     |
+            | ListItems   | resources/fixtures/request-list-items.json   | resources/fixtures/response-list-items.json   |
+            | CreateItems | resources/fixtures/request-create-items.json | resources/fixtures/response-create-items.json |
+
+    Scenario Outline: Request several times with payload from file in doc string
+        Given "item-service" receives some grpc requests "/grpctest.ItemService/<method>" with payload from file:
+        """
+        <request_file>
+        """
+        And the grpc service responds with payload from file "<response_file>"
+
+        # 1st request.
+        When I request a grpc method "/grpctest.ItemService/<method>" with payload from file:
+        """
+        <request_file>
+        """
+
+        Then I should have a grpc response with payload from file:
+        """
+        <response_file>
+        """
+
+        # 2nd request.
+        When I request a grpc method "/grpctest.ItemService/<method>" with payload from file:
+        """
+        <request_file>
+        """
+
+        Then I should have a grpc response with payload from file:
+        """
+        <response_file>
+        """
+
+        # 3rd request.
+        When I request a grpc method "/grpctest.ItemService/<method>" with payload from file:
+        """
+        <request_file>
+        """
+
+        Then I should have a grpc response with payload from file:
+        """
+        <response_file>
+        """
+
+        Examples:
+            | method      | request_file                                 | response_file                                 |
+            | GetItem     | resources/fixtures/request-get-item.json     | resources/fixtures/response-get-item.json     |
+            | ListItems   | resources/fixtures/request-list-items.json   | resources/fixtures/response-list-items.json   |
+            | CreateItems | resources/fixtures/request-create-items.json | resources/fixtures/response-create-items.json |

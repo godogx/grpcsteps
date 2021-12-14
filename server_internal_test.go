@@ -7,11 +7,33 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestExternalServiceManager_ReceiveRequestWithPayloadFromFile_ReadFileError(t *testing.T) {
+func TestExternalServiceManager_ReceiveOneRequestWithPayloadFromFile_ReadFileError(t *testing.T) {
 	t.Parallel()
 
 	_, err := NewExternalServiceManager().
-		receiveRequestWithPayloadFromFile(context.Background(), "item-service", "/grpctest.ItemService/GetItem", "not_found")
+		receiveOneRequestWithPayloadFromFile(context.Background(), "item-service", "/grpctest.ItemService/GetItem", "not_found")
+
+	expected := `open not_found: no such file or directory`
+
+	assert.EqualError(t, err, expected)
+}
+
+func TestExternalServiceManager_ReceiveRepeatedRequestsWithPayloadFromFile_ReadFileError(t *testing.T) {
+	t.Parallel()
+
+	_, err := NewExternalServiceManager().
+		receiveRepeatedRequestsWithPayloadFromFile(context.Background(), "item-service", 10, "/grpctest.ItemService/GetItem", "not_found")
+
+	expected := `open not_found: no such file or directory`
+
+	assert.EqualError(t, err, expected)
+}
+
+func TestExternalServiceManager_ReceiveManyRequestsWithPayloadFromFile_ReadFileError(t *testing.T) {
+	t.Parallel()
+
+	_, err := NewExternalServiceManager().
+		receiveManyRequestsWithPayloadFromFile(context.Background(), "item-service", "/grpctest.ItemService/GetItem", "not_found")
 
 	expected := `open not_found: no such file or directory`
 
