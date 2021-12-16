@@ -9,6 +9,7 @@ import (
 	"github.com/nhatthm/grpcmock"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/test/bufconn"
 
 	"github.com/godogx/grpcsteps"
@@ -201,7 +202,7 @@ func runServerTest(
 	c := grpcsteps.NewClient(
 		grpcsteps.WithDefaultServiceOptions(
 			grpcsteps.WithDialOptions(
-				grpc.WithInsecure(),
+				grpc.WithTransportCredentials(insecure.NewCredentials()),
 				grpc.WithContextDialer(func(context.Context, string) (net.Conn, error) {
 					return buf.Dial()
 				}),
