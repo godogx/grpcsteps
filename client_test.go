@@ -9,6 +9,7 @@ import (
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -24,7 +25,7 @@ func TestClient_NoServer(t *testing.T) {
 	c := grpcsteps.NewClient(
 		grpcsteps.RegisterServiceFromInstance("NoServer",
 			(*grpctest.ItemServiceServer)(nil),
-			grpcsteps.WithDialOption(grpc.WithInsecure()),
+			grpcsteps.WithDialOption(grpc.WithTransportCredentials(insecure.NewCredentials())),
 		),
 	)
 
@@ -315,7 +316,7 @@ func runClientTest(t *testing.T, scenario string, opts ...testSrv.ServiceOption)
 	c := grpcsteps.NewClient(
 		grpcsteps.WithDefaultServiceOptions(
 			grpcsteps.WithDialOptions(
-				grpc.WithInsecure(),
+				grpc.WithTransportCredentials(insecure.NewCredentials()),
 				grpc.WithContextDialer(dialer),
 			),
 		),
