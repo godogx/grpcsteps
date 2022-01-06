@@ -3,7 +3,7 @@ module github.com/godogx/grpcsteps
 go 1.17
 
 require (
-	github.com/cucumber/godog v0.12.2
+	github.com/cucumber/godog v0.12.3
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
 	github.com/nhatthm/grpcmock v0.16.0
 	github.com/stretchr/testify v1.7.0
