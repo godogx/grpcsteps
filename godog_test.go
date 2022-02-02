@@ -9,6 +9,7 @@ import (
 )
 
 type suiteT interface {
+	Logf(format string, args ...interface{})
 	Errorf(format string, args ...interface{})
 }
 
@@ -71,6 +72,11 @@ func noColors() suiteOption {
 
 type testT struct {
 	error error
+}
+
+func (t *testT) Logf(format string, args ...interface{}) {
+	fmt.Printf(format, args...)
+	fmt.Println()
 }
 
 func (t *testT) Errorf(format string, args ...interface{}) {

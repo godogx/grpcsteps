@@ -193,6 +193,8 @@ func runServerTest(
 ) {
 	buf := bufconn.Listen(1024 * 1024)
 
+	t.Logf("[%s]: starting grpc server", scenario)
+
 	srv := grpcsteps.NewExternalServiceManager()
 	srv.AddService("item-service",
 		grpcmock.WithListener(buf),
@@ -213,7 +215,9 @@ func runServerTest(
 
 	opts = append(opts,
 		afterSuite(func() {
+			t.Logf("[%s]: shutting down grpc server", scenario)
 			srv.Close()
+			t.Logf("[%s]: grpc server stopped", scenario)
 		}),
 		initScenario(c.RegisterContext, srv.RegisterContext),
 		featureFiles(fmt.Sprintf("features/server/%s.feature", scenario)),
