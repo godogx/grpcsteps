@@ -30,7 +30,7 @@ func assertServerResponseErrorCode(req clientRequest, expected codes.Code) error
 	actual := status.Convert(err).Code()
 
 	if expected != actual {
-		return fmt.Errorf("unexpected error code, got %q, want %q", actual, expected) // nolint: goerr113
+		return fmt.Errorf("got %w, want %q", err, expected)
 	}
 
 	return nil

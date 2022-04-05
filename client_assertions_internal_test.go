@@ -102,7 +102,7 @@ func TestAssertServerResponseErrorCode(t *testing.T) {
 			request: func() ([]byte, error) {
 				return nil, status.Error(codes.Internal, "internal server error")
 			},
-			expectedError: `unexpected error code, got "Internal", want "FailedPrecondition"`,
+			expectedError: `got rpc error: code = Internal desc = internal server error, want "FailedPrecondition"`,
 		},
 		{
 			scenario: "got expected error",
