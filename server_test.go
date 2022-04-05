@@ -6,6 +6,7 @@ import (
 	"net"
 	"testing"
 
+	"github.com/cucumber/godog"
 	"github.com/nhatthm/grpcmock"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
@@ -191,7 +192,7 @@ func runServerTest(
 	scenario string,
 	opts ...suiteOption,
 ) {
-	buf := bufconn.Listen(1024 * 1024)
+	buf := bufconn.Listen(2048 * 2048)
 
 	t.Logf("[%s]: starting grpc server", scenario)
 
@@ -219,7 +220,27 @@ func runServerTest(
 			srv.Close()
 			t.Logf("[%s]: grpc server stopped", scenario)
 		}),
-		initScenario(c.RegisterContext, srv.RegisterContext),
+		initScenario(
+			func(sc *godog.ScenarioContext) {
+				sc.Before(func(ctx context.Context, sc *godog.Scenario) (context.Context, error) {
+					t.Logf("==> [%s]: starting scenario", sc.Name)
+
+					return ctx, nil
+				})
+
+				sc.After(func(ctx context.Context, sc *godog.Scenario, err error) (context.Context, error) {
+					if err == nil {
+						t.Logf("==> [%s]: scenario finished", sc.Name)
+					} else {
+						t.Logf("==> [%s]: scenario failed with error %q", sc.Name, err.Error())
+					}
+
+					return ctx, nil
+				})
+			},
+			c.RegisterContext,
+			srv.RegisterContext,
+		),
 		featureFiles(fmt.Sprintf("features/server/%s.feature", scenario)),
 	)
 

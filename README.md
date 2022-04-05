@@ -87,13 +87,13 @@ func TestIntegration(t *testing.T) {
 
 	suite := godog.TestSuite{
 		Name: "Integration",
-		TestSuiteInitializer: func(ctx *godog.TestSuiteContext) {
-			ctx.After(func() {
+		TestSuiteInitializer: func(sc *godog.TestSuiteContext) {
+			sc.AfterSuite(func() {
 				m.Close()
 			})
 		},
-		ScenarioInitializer: func(ctx *godog.ScenarioContext) {
-			m.RegisterContext(ctx)
+		ScenarioInitializer: func(sc *godog.ScenarioContext) {
+			m.RegisterContext(sc)
 		},
 		Options: &godog.Options{
 			Strict:    true,
