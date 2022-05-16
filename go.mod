@@ -7,7 +7,7 @@ require (
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
 	github.com/nhatthm/grpcmock v0.17.0
 	github.com/stretchr/testify v1.7.1
-	github.com/swaggest/assertjson v1.6.8
+	github.com/swaggest/assertjson v1.7.0
 	google.golang.org/grpc v1.46.0
 	google.golang.org/protobuf v1.28.0
 )
@@ -24,6 +24,7 @@ require (
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/iancoleman/orderedmap v0.2.0 // indirect
 	github.com/nhatthm/go-matcher v1.3.1 // indirect
+	github.com/nxadm/tail v1.4.8 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/sergi/go-diff v1.2.0 // indirect
 	github.com/spf13/afero v1.8.2 // indirect
