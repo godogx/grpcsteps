@@ -6,7 +6,7 @@ require (
 	github.com/cucumber/godog v0.12.5
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
 	github.com/nhatthm/grpcmock v0.17.0
-	github.com/stretchr/testify v1.7.5
+	github.com/stretchr/testify v1.8.0
 	github.com/swaggest/assertjson v1.7.0
 	google.golang.org/grpc v1.48.0
 	google.golang.org/protobuf v1.28.0
