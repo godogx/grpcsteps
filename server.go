@@ -7,9 +7,9 @@ import (
 	"reflect"
 
 	"github.com/cucumber/godog"
-	"github.com/nhatthm/grpcmock"
-	"github.com/nhatthm/grpcmock/request"
-	"github.com/nhatthm/grpcmock/service"
+	"go.nhat.io/grpcmock"
+	"go.nhat.io/grpcmock/request"
+	"go.nhat.io/grpcmock/service"
 	"google.golang.org/grpc/codes"
 )
 

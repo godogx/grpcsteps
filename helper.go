@@ -7,8 +7,8 @@ import (
 	"regexp"
 	"strings"
 
-	grpcReflect "github.com/nhatthm/grpcmock/reflect"
-	"github.com/nhatthm/grpcmock/service"
+	xreflect "go.nhat.io/grpcmock/reflect"
+	"go.nhat.io/grpcmock/service"
 	"google.golang.org/grpc/codes"
 )
 
@@ -18,7 +18,7 @@ var (
 )
 
 func unmarshal(in interface{}, isSlice bool, data *string) (interface{}, error) {
-	result := reflect.New(grpcReflect.UnwrapType(in))
+	result := reflect.New(xreflect.UnwrapType(in))
 
 	if isSlice {
 		result = reflect.MakeSlice(reflect.SliceOf(result.Type()), 0, 0)

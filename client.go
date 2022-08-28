@@ -6,8 +6,8 @@ import (
 	"os"
 
 	"github.com/cucumber/godog"
-	grpcReflect "github.com/nhatthm/grpcmock/reflect"
-	"github.com/nhatthm/grpcmock/service"
+	xreflect "go.nhat.io/grpcmock/reflect"
+	"go.nhat.io/grpcmock/service"
 	"google.golang.org/grpc"
 )
 
@@ -33,7 +33,7 @@ type Client struct {
 type ClientOption func(s *Client)
 
 func (c *Client) registerService(id string, svc interface{}, opts ...ServiceOption) {
-	for _, method := range grpcReflect.FindServiceMethods(svc) {
+	for _, method := range xreflect.FindServiceMethods(svc) {
 		svc := &Service{
 			Method: service.Method{
 				ServiceName: id,
@@ -185,7 +185,7 @@ func RegisterServiceFromInstance(id string, svc interface{}, opts ...ServiceOpti
 // RegisterService registers a grpc server by its interface.
 func RegisterService(registerFunc interface{}, opts ...ServiceOption) ClientOption {
 	return func(c *Client) {
-		serviceDesc, svc := grpcReflect.ParseRegisterFunc(registerFunc)
+		serviceDesc, svc := xreflect.ParseRegisterFunc(registerFunc)
 
 		c.registerService(serviceDesc.ServiceName, svc, opts...)
 	}

@@ -6,7 +6,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/nhatthm/httpmock)](https://goreportcard.com/report/github.com/nhatthm/httpmock)
 [![GoDevDoc](https://img.shields.io/badge/dev-doc-00ADD8?logo=go)](https://pkg.go.dev/github.com/godogx/grpcsteps)
 
-`grpcsteps` uses [`nhatthm/grpcmock`](https://github.com/nhatthm/grpcmock) to provide steps for [`cucumber/godog`](https://github.com/cucumber/godog) and makes
+`grpcsteps` uses [`nhatthm/grpcmock`](https://go.nhat.io/grpcmock) to provide steps for [`cucumber/godog`](https://github.com/cucumber/godog) and makes
 it easy to run tests with grpc server and client.
 
 ## Table of Contents
@@ -158,7 +158,7 @@ package mypackage
 import (
 	"testing"
 
-	"github.com/nhatthm/grpcmock"
+	"go.nhat.io/grpcmock"
 
 	"github.com/godogx/grpcsteps"
 )
@@ -185,7 +185,7 @@ package mypackage
 import (
 	"testing"
 
-	"github.com/nhatthm/grpcmock"
+	"go.nhat.io/grpcmock"
 	"google.golang.org/grpc/test/bufconn"
 
 	"github.com/godogx/grpcsteps"
