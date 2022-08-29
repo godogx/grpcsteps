@@ -3,10 +3,10 @@
 [![GitHub Releases](https://img.shields.io/github/v/release/godogx/grpcsteps)](https://github.com/godogx/grpcsteps/releases/latest)
 [![Build Status](https://github.com/godogx/grpcsteps/actions/workflows/test.yaml/badge.svg)](https://github.com/godogx/grpcsteps/actions/workflows/test.yaml)
 [![codecov](https://codecov.io/gh/godogx/grpcsteps/branch/master/graph/badge.svg?token=eTdAgDE2vR)](https://codecov.io/gh/godogx/grpcsteps)
-[![Go Report Card](https://goreportcard.com/badge/github.com/nhatthm/httpmock)](https://goreportcard.com/report/github.com/nhatthm/httpmock)
+[![Go Report Card](https://goreportcard.com/badge/github.com/godogx/grpcsteps)](https://goreportcard.com/report/github.com/godogx/grpcsteps)
 [![GoDevDoc](https://img.shields.io/badge/dev-doc-00ADD8?logo=go)](https://pkg.go.dev/github.com/godogx/grpcsteps)
 
-`grpcsteps` uses [`nhatthm/grpcmock`](https://go.nhat.io/grpcmock) to provide steps for [`cucumber/godog`](https://github.com/cucumber/godog) and makes
+`grpcsteps` uses [`go.nhat.io/grpcmock`](https://github.com/nhatthm/grpcmock) to provide steps for [`cucumber/godog`](https://github.com/cucumber/godog) and makes
 it easy to run tests with grpc server and client.
 
 ## Table of Contents
