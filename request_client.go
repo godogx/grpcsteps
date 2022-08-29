@@ -7,12 +7,12 @@ import (
 	"sync"
 	"time"
 
-	"github.com/nhatthm/grpcmock"
-	"github.com/nhatthm/grpcmock/invoker"
-	"github.com/nhatthm/grpcmock/must"
-	grpcReflect "github.com/nhatthm/grpcmock/reflect"
-	"github.com/nhatthm/grpcmock/service"
 	"github.com/swaggest/assertjson"
+	"go.nhat.io/grpcmock"
+	"go.nhat.io/grpcmock/invoker"
+	"go.nhat.io/grpcmock/must"
+	xreflect "go.nhat.io/grpcmock/reflect"
+	"go.nhat.io/grpcmock/service"
 )
 
 // ErrNoClientRequestInContext indicates that there is no client request in context.
@@ -142,7 +142,7 @@ func newClientRequestPlannerContext(ctx context.Context, svc *Service, payload i
 }
 
 func newServerOutput(methodType service.Type, out interface{}) interface{} {
-	result := reflect.New(grpcReflect.UnwrapType(out))
+	result := reflect.New(xreflect.UnwrapType(out))
 
 	if service.IsMethodServerStream(methodType) ||
 		service.IsMethodBidirectionalStream(methodType) {

@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/nhatthm/grpcmock/service"
 	"github.com/stretchr/testify/assert"
+	"go.nhat.io/grpcmock/service"
 
 	"github.com/godogx/grpcsteps/internal/grpctest"
 )

@@ -3,8 +3,8 @@ package grpcsteps
 import (
 	"testing"
 
-	"github.com/nhatthm/grpcmock/service"
 	"github.com/stretchr/testify/assert"
+	"go.nhat.io/grpcmock/service"
 	"google.golang.org/grpc/codes"
 
 	"github.com/godogx/grpcsteps/internal/grpctest"

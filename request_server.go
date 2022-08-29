@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/nhatthm/grpcmock/request"
+	"go.nhat.io/grpcmock/request"
 	"google.golang.org/grpc/codes"
 )
 

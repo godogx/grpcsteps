@@ -5,8 +5,8 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/nhatthm/grpcmock/request"
 	"github.com/stretchr/testify/assert"
+	"go.nhat.io/grpcmock/request"
 )
 
 func TestServerRequestReflectorPlanner_WithTimeout(t *testing.T) {
