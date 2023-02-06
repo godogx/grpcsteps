@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"go.nhat.io/grpcmock/request"
 	"google.golang.org/grpc/codes"
 )
 
@@ -20,11 +19,11 @@ type serverRequestPlanner interface {
 }
 
 type serverRequestReflectorPlanner struct {
-	request request.Request
+	expected expectation
 }
 
 func (s *serverRequestReflectorPlanner) WithHeader(header string, value interface{}) error {
-	expectServerRequestWithHeader(s.request, header, value)
+	s.expected.WithHeader(header, value)
 
 	return nil
 }
@@ -34,20 +33,20 @@ func (s *serverRequestReflectorPlanner) WithTimeout(time.Duration) error {
 }
 
 func (s *serverRequestReflectorPlanner) Return(payload string) error { // nolint: unparam
-	setServerRequestReturn(s.request, payload)
+	s.expected.Return(payload)
 
 	return nil
 }
 
 func (s *serverRequestReflectorPlanner) ReturnError(code codes.Code, message string) error { // nolint: unparam
-	setServerRequestReturnError(s.request, code, message)
+	s.expected.ReturnError(code, message)
 
 	return nil
 }
 
-func newServerRequestPlanner(r request.Request) *serverRequestReflectorPlanner {
+func newServerRequestPlanner(expected expectation) *serverRequestReflectorPlanner {
 	return &serverRequestReflectorPlanner{
-		request: r,
+		expected: expected,
 	}
 }
 
@@ -60,8 +59,8 @@ func serverRequestPlannerFromContext(ctx context.Context) serverRequestPlanner {
 	return r
 }
 
-func newServerRequestPlannerContext(ctx context.Context, r request.Request) context.Context {
-	return requestPlannerToContext(ctx, newServerRequestPlanner(r))
+func newServerRequestPlannerContext(ctx context.Context, expected expectation) context.Context {
+	return requestPlannerToContext(ctx, newServerRequestPlanner(expected))
 }
 
 type missingServerRequestPlanner struct{}

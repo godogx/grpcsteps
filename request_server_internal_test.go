@@ -2,18 +2,15 @@ package grpcsteps
 
 import (
 	"context"
-	"sync"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"go.nhat.io/grpcmock/request"
 )
 
 func TestServerRequestReflectorPlanner_WithTimeout(t *testing.T) {
 	t.Parallel()
 
-	r := request.NewUnaryRequest(&sync.Mutex{}, nil)
-	p := newServerRequestPlanner(r)
+	p := newServerRequestPlanner((*unaryExpectation)(nil))
 
 	err := p.WithTimeout(0)
 

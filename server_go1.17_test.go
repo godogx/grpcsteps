@@ -38,7 +38,7 @@ func TestExternalServiceManager_Error(t *testing.T) {
 			expected: `Feature: Error when service is not found
 
   Scenario: service is not registered                  # features/server/ErrorServiceNotFound.feature:3
-    Given "not-found" receives a grpc request "method" # server.go:97 -> *ExternalServiceManager
+    Given "not-found" receives a grpc request "method" # server.go:81 -> *ExternalServiceManager
     grpc service not found, did you forget to setup the grpc service "not-found"?
 `,
 		},
@@ -47,7 +47,7 @@ func TestExternalServiceManager_Error(t *testing.T) {
 			expected: `Feature: Error when method is not found
 
   Scenario: method not found                                 # features/server/ErrorMethodNotFound.feature:3
-    Given "item-service" receives a grpc request "not-found" # server.go:97 -> *ExternalServiceManager
+    Given "item-service" receives a grpc request "not-found" # server.go:81 -> *ExternalServiceManager
     grpc method not found: not-found
 `,
 		},
@@ -56,7 +56,7 @@ func TestExternalServiceManager_Error(t *testing.T) {
 			expected: `Feature: Error when method is not supported
 
   Scenario: method not supported                                                        # features/server/ErrorMethodNotSupported.feature:3
-    Given "item-service" receives a grpc request "/grpctest.ItemService/TransformItems" # server.go:97 -> *ExternalServiceManager
+    Given "item-service" receives a grpc request "/grpctest.ItemService/TransformItems" # server.go:81 -> *ExternalServiceManager
     grpc method not supported: BidirectionalStream /grpctest.ItemService/TransformItems
 `,
 		},
@@ -65,13 +65,13 @@ func TestExternalServiceManager_Error(t *testing.T) {
 			expected: `Feature: Expect a request but receive nothing
 
   Scenario: there is one request                                                               # features/server/ErrorExpectOneRequestButNoReceive.feature:3
-    Given "item-service" receives a grpc request "/grpctest.ItemService/GetItem" with payload: # server.go:105 -> *ExternalServiceManager
+    Given "item-service" receives a grpc request "/grpctest.ItemService/GetItem" with payload: # server.go:89 -> *ExternalServiceManager
       """
       {
           "id": 42
       }
       """
-    And the grpc service responds with payload:                                                # server.go:176 -> *ExternalServiceManager
+    And the grpc service responds with payload:                                                # server.go:160 -> *ExternalServiceManager
       """
       {
           "id": 42,
@@ -91,13 +91,13 @@ func TestExternalServiceManager_Error(t *testing.T) {
 			expected: `Feature: Expect 2 requests but receive only 1
 
   Scenario: receive only 1 request                                                              # features/server/ErrorExpectTwoRequestsButReceiveOne.feature:3
-    Given "item-service" receives 2 grpc requests "/grpctest.ItemService/GetItem" with payload: # server.go:130 -> *ExternalServiceManager
+    Given "item-service" receives 2 grpc requests "/grpctest.ItemService/GetItem" with payload: # server.go:114 -> *ExternalServiceManager
       """
       {
           "id": 42
       }
       """
-    And the grpc service responds with payload:                                                 # server.go:176 -> *ExternalServiceManager
+    And the grpc service responds with payload:                                                 # server.go:160 -> *ExternalServiceManager
       """
       {
           "id": 42,
@@ -130,13 +130,13 @@ func TestExternalServiceManager_Error(t *testing.T) {
 			expected: `Feature: Expect several requests but receive nothing
 
   Scenario: expect several requests                                                                   # features/server/ErrorExpectSeveralRequestsButNoReceive.feature:3
-    Given "item-service" receives several grpc requests "/grpctest.ItemService/GetItem" with payload: # server.go:155 -> *ExternalServiceManager
+    Given "item-service" receives several grpc requests "/grpctest.ItemService/GetItem" with payload: # server.go:139 -> *ExternalServiceManager
       """
       {
           "id": 42
       }
       """
-    And the grpc service responds with payload:                                                       # server.go:176 -> *ExternalServiceManager
+    And the grpc service responds with payload:                                                       # server.go:160 -> *ExternalServiceManager
       """
       {
           "id": 42,
@@ -156,13 +156,13 @@ func TestExternalServiceManager_Error(t *testing.T) {
 			expected: `Feature: Expectations are not checked when scenario is failed
 
   Scenario: there is one expectation                                                           # features/server/ErrorExpectationsNotCheckedIfScenarioFailed.feature:3
-    Given "item-service" receives a grpc request "/grpctest.ItemService/GetItem" with payload: # server.go:105 -> *ExternalServiceManager
+    Given "item-service" receives a grpc request "/grpctest.ItemService/GetItem" with payload: # server.go:89 -> *ExternalServiceManager
       """
       {
           "id": 42
       }
       """
-    And the grpc service responds with code "this fails"                                       # server.go:206 -> *ExternalServiceManager
+    And the grpc service responds with code "this fails"                                       # server.go:190 -> *ExternalServiceManager
     invalid code: "\"THIS FAILS\""
 
 --- Failed steps:

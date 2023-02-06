@@ -4,27 +4,17 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"reflect"
 
 	"github.com/cucumber/godog"
 	"go.nhat.io/grpcmock"
-	"go.nhat.io/grpcmock/request"
+	"go.nhat.io/grpcmock/planner"
 	"go.nhat.io/grpcmock/service"
 	"google.golang.org/grpc/codes"
 )
 
-const (
-	methodServerExpect       = "Expect"
-	methodRequestWithPayload = "WithPayload"
-	methodRequestWithHeader  = "WithHeader"
-	methodRequestReturn      = "Return"
-	methodRequestReturnError = "ReturnError"
-	methodRequestTimes       = "Times"
-)
-
 // ExternalServiceManager is a grpc server for godog.
 type ExternalServiceManager struct {
-	servers map[string]*grpcmock.Server
+	servers map[string]*wrappedServer
 }
 
 // RegisterContext registers to godog scenario.
@@ -70,7 +60,7 @@ func (m *ExternalServiceManager) RegisterContext(sc *godog.ScenarioContext) {
 	registerRequestPlanner(sc)
 }
 
-func (m *ExternalServiceManager) receiveRequest(ctx context.Context, serviceID, method string, times request.RepeatedTime, payload *string) (context.Context, error) {
+func (m *ExternalServiceManager) receiveRequest(ctx context.Context, serviceID, method string, times uint, payload *string) (context.Context, error) {
 	srv, found := m.servers[serviceID]
 	if !found {
 		//goland:noinspection GoErrorStringFormat
@@ -80,16 +70,10 @@ func (m *ExternalServiceManager) receiveRequest(ctx context.Context, serviceID, 
 		)
 	}
 
-	svc := grpcmock.FindServerMethod(srv, method)
-	if svc == nil {
-		return ctx, fmt.Errorf("%w: %s", ErrGRPCMethodNotFound, method)
+	r, err := srv.expect(method, times, payload)
+	if err != nil {
+		return ctx, err
 	}
-
-	if service.IsMethodBidirectionalStream(svc.MethodType) {
-		return ctx, fmt.Errorf("%w: %s %s", ErrGRPCMethodNotSupported, svc.MethodType, method)
-	}
-
-	r := expectServerRequest(srv, svc, times, payload)
 
 	return newServerRequestPlannerContext(ctx, r), nil
 }
@@ -120,11 +104,11 @@ func (m *ExternalServiceManager) receiveOneRequestWithPayloadFromFileDocString(c
 }
 
 func (m *ExternalServiceManager) receiveRepeatedRequestsWithoutPayload(ctx context.Context, service string, times int, method string) (context.Context, error) {
-	return m.receiveRequest(ctx, service, method, request.RepeatedTime(times), nil)
+	return m.receiveRequest(ctx, service, method, uint(times), nil)
 }
 
 func (m *ExternalServiceManager) receiveRepeatedRequestsWithPayload(ctx context.Context, service string, times int, method, data string) (context.Context, error) {
-	return m.receiveRequest(ctx, service, method, request.RepeatedTime(times), &data)
+	return m.receiveRequest(ctx, service, method, uint(times), &data)
 }
 
 func (m *ExternalServiceManager) receiveRepeatedRequestsWithPayloadFromDocString(ctx context.Context, service string, times int, method string, payload *godog.DocString) (context.Context, error) {
@@ -145,11 +129,11 @@ func (m *ExternalServiceManager) receiveRepeatedRequestsWithPayloadFromFileDocSt
 }
 
 func (m *ExternalServiceManager) receiveManyRequestsWithoutPayload(ctx context.Context, service, method string) (context.Context, error) {
-	return m.receiveRequest(ctx, service, method, request.UnlimitedTimes, nil)
+	return m.receiveRequest(ctx, service, method, planner.UnlimitedTimes, nil)
 }
 
 func (m *ExternalServiceManager) receiveManyRequestsWithPayload(ctx context.Context, service, method, data string) (context.Context, error) {
-	return m.receiveRequest(ctx, service, method, request.UnlimitedTimes, &data)
+	return m.receiveRequest(ctx, service, method, planner.UnlimitedTimes, &data)
 }
 
 func (m *ExternalServiceManager) receiveManyRequestsWithPayloadFromDocString(ctx context.Context, service, method string, payload *godog.DocString) (context.Context, error) {
@@ -223,11 +207,9 @@ func (m *ExternalServiceManager) resetExpectations() {
 
 // AddService starts a new service and returns the server address for client to connect.
 func (m *ExternalServiceManager) AddService(id string, opts ...grpcmock.ServerOption) string {
-	srv := grpcmock.NewServer(opts...)
+	m.servers[id] = newServer(opts...)
 
-	m.servers[id] = srv
-
-	return srv.Address()
+	return m.servers[id].Address()
 }
 
 // Close closes the server.
@@ -250,49 +232,127 @@ func (m *ExternalServiceManager) assertExpectationsWereMet() error {
 // NewExternalServiceManager initiates a new external service manager for testing.
 func NewExternalServiceManager() *ExternalServiceManager {
 	return &ExternalServiceManager{
-		servers: make(map[string]*grpcmock.Server),
+		servers: make(map[string]*wrappedServer),
 	}
 }
 
-func callMethod(obj interface{}, method string, args ...interface{}) []reflect.Value {
-	callArgs := make([]reflect.Value, len(args))
-
-	for i, arg := range args {
-		callArgs[i] = reflect.ValueOf(arg)
-	}
-
-	return reflect.ValueOf(obj).
-		MethodByName(method).
-		Call(callArgs)
+type wrappedServer struct {
+	*grpcmock.Server
 }
 
-func expectServerRequest(srv *grpcmock.Server, svc *service.Method, times request.RepeatedTime, payload *string) request.Request {
-	method := fmt.Sprintf("%s%s", methodServerExpect, svc.MethodType)
+func (s *wrappedServer) expect(method string, times uint, payload *string) (expectation, error) {
+	svc := grpcmock.FindServerMethod(s.Server, method)
+	if svc == nil {
+		return nil, fmt.Errorf("%w: %s", ErrGRPCMethodNotFound, method)
+	}
 
-	result := callMethod(srv, method, svc.FullName())
-	r := result[0].Interface().(request.Request) // nolint: errcheck
+	var expected expectation
+
+	switch svc.MethodType {
+	case service.TypeUnary:
+		expected = &unaryExpectation{s.ExpectUnary(method)}
+
+	case service.TypeClientStream:
+		expected = &clientStreamExpectation{s.ExpectClientStream(method)}
+
+	case service.TypeServerStream:
+		expected = &serverStreamExpectation{s.ExpectServerStream(method)}
+
+	case service.TypeBidirectionalStream:
+		return nil, fmt.Errorf("%w: %s %s", ErrGRPCMethodNotSupported, svc.MethodType, method)
+	}
+
+	expected.Times(times)
 
 	if payload != nil {
-		expectServerRequestWithPayload(r, *payload)
+		expected.WithPayload(*payload)
 	}
 
-	callMethod(r, methodRequestTimes, times)
-
-	return r
+	return expected, nil
 }
 
-func expectServerRequestWithPayload(r request.Request, payload string) {
-	callMethod(r, methodRequestWithPayload, payload)
+func newServer(opts ...grpcmock.ServerOption) *wrappedServer {
+	return &wrappedServer{
+		Server: grpcmock.NewServer(opts...),
+	}
 }
 
-func expectServerRequestWithHeader(r request.Request, header string, value interface{}) {
-	callMethod(r, methodRequestWithHeader, header, value)
+type expectation interface {
+	WithPayload(in interface{})
+	WithHeader(key string, value interface{})
+	Return(v interface{})
+	ReturnError(code codes.Code, msg string)
+	Times(i uint)
 }
 
-func setServerRequestReturn(r request.Request, payload string) {
-	callMethod(r, methodRequestReturn, payload)
+type unaryExpectation struct {
+	grpcmock.UnaryExpectation
 }
 
-func setServerRequestReturnError(r request.Request, code codes.Code, message string) {
-	callMethod(r, methodRequestReturnError, code, message)
+func (e *unaryExpectation) WithPayload(in interface{}) {
+	e.UnaryExpectation.WithPayload(in)
+}
+
+func (e *unaryExpectation) WithHeader(key string, value interface{}) {
+	e.UnaryExpectation.WithHeader(key, value)
+}
+
+func (e *unaryExpectation) Return(v interface{}) {
+	e.UnaryExpectation.Return(v)
+}
+
+func (e *unaryExpectation) ReturnError(code codes.Code, msg string) {
+	e.UnaryExpectation.ReturnError(code, msg)
+}
+
+func (e *unaryExpectation) Times(i uint) {
+	e.UnaryExpectation.Times(i)
+}
+
+type clientStreamExpectation struct {
+	grpcmock.ClientStreamExpectation
+}
+
+func (e *clientStreamExpectation) WithPayload(in interface{}) {
+	e.ClientStreamExpectation.WithPayload(in)
+}
+
+func (e *clientStreamExpectation) WithHeader(key string, value interface{}) {
+	e.ClientStreamExpectation.WithHeader(key, value)
+}
+
+func (e *clientStreamExpectation) Return(v interface{}) {
+	e.ClientStreamExpectation.Return(v)
+}
+
+func (e *clientStreamExpectation) ReturnError(code codes.Code, msg string) {
+	e.ClientStreamExpectation.ReturnError(code, msg)
+}
+
+func (e *clientStreamExpectation) Times(i uint) {
+	e.ClientStreamExpectation.Times(i)
+}
+
+type serverStreamExpectation struct {
+	grpcmock.ServerStreamExpectation
+}
+
+func (e *serverStreamExpectation) WithPayload(in interface{}) {
+	e.ServerStreamExpectation.WithPayload(in)
+}
+
+func (e *serverStreamExpectation) WithHeader(key string, value interface{}) {
+	e.ServerStreamExpectation.WithHeader(key, value)
+}
+
+func (e *serverStreamExpectation) Return(v interface{}) {
+	e.ServerStreamExpectation.Return(v)
+}
+
+func (e *serverStreamExpectation) ReturnError(code codes.Code, msg string) {
+	e.ServerStreamExpectation.ReturnError(code, msg)
+}
+
+func (e *serverStreamExpectation) Times(i uint) {
+	e.ServerStreamExpectation.Times(i)
 }
