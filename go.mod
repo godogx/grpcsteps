@@ -9,7 +9,7 @@ require (
 	github.com/swaggest/assertjson v1.7.0
 	go.nhat.io/grpcmock v0.23.0
 	google.golang.org/grpc v1.53.0
-	google.golang.org/protobuf v1.28.1
+	google.golang.org/protobuf v1.29.0
 )
 
 require (
