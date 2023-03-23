@@ -8,7 +8,7 @@ require (
 	github.com/stretchr/testify v1.8.1
 	github.com/swaggest/assertjson v1.7.0
 	go.nhat.io/grpcmock v0.23.0
-	google.golang.org/grpc v1.53.0
+	google.golang.org/grpc v1.54.0
 	google.golang.org/protobuf v1.28.1
 )
 
@@ -31,9 +31,9 @@ require (
 	github.com/yudai/golcs v0.0.0-20170316035057-ecda9a501e82 // indirect
 	go.nhat.io/matcher/v2 v2.0.0 // indirect
 	go.nhat.io/wait v0.1.0 // indirect
-	golang.org/x/net v0.5.0 // indirect
-	golang.org/x/sys v0.4.0 // indirect
-	golang.org/x/text v0.6.0 // indirect
+	golang.org/x/net v0.8.0 // indirect
+	golang.org/x/sys v0.6.0 // indirect
+	golang.org/x/text v0.8.0 // indirect
 	google.golang.org/genproto v0.0.0-20230202175211-008b39050e57 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
