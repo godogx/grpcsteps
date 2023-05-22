@@ -1,10 +1,14 @@
+MODULE_NAME=grpcsteps
+
 VENDOR_DIR = vendor
 
-GOLANGCI_LINT_VERSION ?= v1.50.1
+GOLANGCI_LINT_VERSION ?= v1.52.2
 
 GO ?= go
 GOLANGCI_LINT ?= $(shell go env GOPATH)/bin/golangci-lint-$(GOLANGCI_LINT_VERSION)
 GHERKIN_LINT ?= gherkin-lint
+
+GITHUB_OUTPUT ?= /dev/null
 
 .PHONY: $(VENDOR_DIR)
 $(VENDOR_DIR):

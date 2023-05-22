@@ -4,9 +4,9 @@ go 1.17
 
 require (
 	github.com/cucumber/godog v0.12.6
-	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
-	github.com/stretchr/testify v1.8.1
-	github.com/swaggest/assertjson v1.7.0
+	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
+	github.com/stretchr/testify v1.8.3
+	github.com/swaggest/assertjson v1.8.1
 	go.nhat.io/grpcmock v0.23.0
 	google.golang.org/grpc v1.55.0
 	google.golang.org/protobuf v1.30.0
@@ -25,15 +25,15 @@ require (
 	github.com/iancoleman/orderedmap v0.2.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/sergi/go-diff v1.3.1 // indirect
-	github.com/spf13/afero v1.9.3 // indirect
+	github.com/spf13/afero v1.9.5 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/yudai/gojsondiff v1.0.0 // indirect
 	github.com/yudai/golcs v0.0.0-20170316035057-ecda9a501e82 // indirect
 	go.nhat.io/matcher/v2 v2.0.0 // indirect
 	go.nhat.io/wait v0.1.0 // indirect
-	golang.org/x/net v0.8.0 // indirect
-	golang.org/x/sys v0.6.0 // indirect
-	golang.org/x/text v0.8.0 // indirect
-	google.golang.org/genproto v0.0.0-20230306155012-7f2fa6fef1f4 // indirect
+	golang.org/x/net v0.10.0 // indirect
+	golang.org/x/sys v0.8.0 // indirect
+	golang.org/x/text v0.9.0 // indirect
+	google.golang.org/genproto v0.0.0-20230410155749-daa745c078e1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
