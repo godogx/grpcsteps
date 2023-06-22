@@ -8,7 +8,7 @@ require (
 	github.com/stretchr/testify v1.8.3
 	github.com/swaggest/assertjson v1.8.1
 	go.nhat.io/grpcmock v0.23.0
-	google.golang.org/grpc v1.56.0
+	google.golang.org/grpc v1.56.1
 	google.golang.org/protobuf v1.30.0
 )
 
