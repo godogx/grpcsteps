@@ -60,7 +60,7 @@ func TestClient_GetItem(t *testing.T) {
 		{
 			scenario: "NotFound",
 			handler: func(ctx context.Context, request *grpctest.GetItemRequest) (*grpctest.Item, error) {
-				return nil, status.Errorf(codes.NotFound, "Item %d not found", request.Id)
+				return nil, status.Errorf(codes.NotFound, "Item %d not found", request.GetId())
 			},
 		},
 		{
@@ -283,7 +283,7 @@ func TestClient_TransformItems(t *testing.T) {
 						return err
 					}
 
-					item.Name = fmt.Sprintf("Modified %s", item.Name)
+					item.Name = fmt.Sprintf("Modified %s", item.GetName())
 
 					if err := srv.Send(item); err != nil {
 						return err
