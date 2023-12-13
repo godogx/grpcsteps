@@ -21,6 +21,7 @@ linters:
   enable-all: true
   disable:
     - deadcode
+    - depguard
     - exhaustivestruct
     - exhaustruct
     - forbidigo
@@ -41,6 +42,7 @@ linters:
     - scopelint
     - structcheck
     - tagliatelle
+    - testifylint
     - testpackage
     - varcheck
     - varnamelen

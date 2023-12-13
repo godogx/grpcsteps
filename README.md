@@ -27,7 +27,7 @@ it easy to run tests with grpc server and client.
 
 ## Prerequisites
 
-- `Go >= 1.17`
+- `Go >= 1.19`
 
 [<sub><sup>[table of contents]</sup></sub>](#table-of-contents)
 
